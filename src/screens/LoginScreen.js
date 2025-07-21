@@ -57,6 +57,7 @@ const LoginScreen = () => {
     dispatch(login(fakeUser));
     await storeUser(fakeUser);
     setIsLoading(false);
+    
   };
 
   return (
