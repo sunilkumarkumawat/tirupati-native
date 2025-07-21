@@ -36,6 +36,7 @@ const menuItems = [
     title: 'Students',
     icon: 'students',
     color: '#4facfe',
+    
   },
   {
     id: 4,

@@ -54,6 +54,7 @@ import GatePass from '../screens/FrontOffice/GatePass';
 import SubDashBoardScreen from '../screens/SubDashBoardScreen';
 import { useSelector } from 'react-redux';
 import { getInitials } from '../theme/Strings';
+import AppointmentPage from '../screens/Appointment';
 
 const Drawer = createDrawerNavigator();
 const { width } = Dimensions.get('window');
@@ -154,6 +155,13 @@ const DrawerNavigator = () => {
       <Drawer.Screen name="CurrentBalance" component={CurrentBalance} />
       <Drawer.Screen name="BalanceFeeReport" component={BalanceFeeReport} />
       <Drawer.Screen name="TransactionReport" component={TransactionReport} />
+      
+
+
+
+
+
+
       <Drawer.Screen
         name="DailyCollectionReport"
         component={DailyCollectionReport}
