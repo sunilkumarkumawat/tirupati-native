@@ -52,6 +52,7 @@ import VisitorBook from '../screens/FrontOffice/VisitorBook';
 import Complain from '../screens/FrontOffice/complain';
 import GatePass from '../screens/FrontOffice/GatePass';
 import SubDashBoardScreen from '../screens/SubDashBoardScreen';
+import AppointmentPage from '../screens/Appointment';
 
 const Drawer = createDrawerNavigator();
 const { width } = Dimensions.get('window');
@@ -150,6 +151,13 @@ const DrawerNavigator = () => {
       <Drawer.Screen name="CurrentBalance" component={CurrentBalance} />
       <Drawer.Screen name="BalanceFeeReport" component={BalanceFeeReport} />
       <Drawer.Screen name="TransactionReport" component={TransactionReport} />
+      
+
+
+
+
+
+
       <Drawer.Screen
         name="DailyCollectionReport"
         component={DailyCollectionReport}
