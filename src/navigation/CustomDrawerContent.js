@@ -28,7 +28,7 @@ const menuItems = [
     id: 2,
     title: 'Fees Report',
     icon: 'money',
-    screen: 'FeeStatement',
+    screen: 'MarkStudentAttendence',
     color: '#f093fb',
   },
   {
@@ -102,6 +102,9 @@ const CustomDrawerContent = ({ navigation }) => {
   const [animatedValues] = useState({});
   const [activeItemId, setActiveItemId] = useState(1);
   const { themeColor } = useTheme();
+
+  //console.log('User Data:', JSON.stringify(user, null, 2));
+
 
   useEffect(() => {
     menuItems.forEach(item => {
@@ -185,10 +188,10 @@ const CustomDrawerContent = ({ navigation }) => {
             <View style={styles.onlineIndicator} />
           </View>
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{user?.name || 'John Doe'}</Text>
+            <Text style={styles.profileName}>{user?.user_name || 'John Doe'}</Text>
             <View style={styles.profileBadge}>
               <Text style={styles.profileRole}>
-                {user?.role || 'Administrator'}
+                {user?.role_name || 'Administrator'}
               </Text>
             </View>
           </View>

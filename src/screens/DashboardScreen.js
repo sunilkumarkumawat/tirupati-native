@@ -18,13 +18,17 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import IconFeather from 'react-native-vector-icons/Feather';
 import IconAntDesign from 'react-native-vector-icons/AntDesign';
 import { useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 
 const { width, height } = Dimensions.get('window');
 
 const DashboardScreen = () => {
   const [activeModule, setActiveModule] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-   const navigation = useNavigation();
+  const navigation = useNavigation();
+  const { user } = useSelector(state => state.auth);
+
+  //console.log('User Data:', JSON.stringify(user, null, 2));
 
   const modules = [
     {
@@ -205,20 +209,19 @@ const DashboardScreen = () => {
   );
 
   const QuickActionButton = ({ action }) => (
-    <TouchableOpacity
-      style={styles.quickActionButton}
-      onPress={() => navigation.navigate(action.module)}
-      activeOpacity={0.7}
-    >
+    <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
       <View style={[styles.quickActionIcon]}>
-        {/* <Icon name={action.icon} size={24} color={action.color} /> */}
         <Image
-          source={require('../theme/asserts/icon/desk.png')} // optional fallback icon
+          source={
+            action.image_url
+              ? { uri: action.image_url }
+              : require('../theme/asserts/icon/default.png')
+          }
           style={{ width: 40, height: 40 }}
           resizeMode="contain"
         />
       </View>
-      <Text style={styles.quickActionText}>{action.title}</Text>
+      <Text style={styles.quickActionText}>{action.modulename}</Text>
     </TouchableOpacity>
   );
 
@@ -295,9 +298,13 @@ const DashboardScreen = () => {
       {/* Quick Actions */}
       <View style={styles.card}>
         <View style={styles.quickActionsGrid}>
-          {quickActions.map((action, index) => (
-            <QuickActionButton key={index} action={action} />
-          ))}
+          {user?.module && Object.keys(user.module).length > 0 ? (
+            Object.values(user.module).map((module, index) => (
+              <QuickActionButton key={index.toString()} action={module} />
+            ))
+          ) : (
+            <Text>No modules available</Text>
+          )}
         </View>
       </View>
 
@@ -793,7 +800,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginTop: 8,
-    justifyContent: 'space-between',
+    gap: 9,
   },
   quickActionButton: {
     alignItems: 'center',

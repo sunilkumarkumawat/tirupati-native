@@ -18,6 +18,7 @@ import {
 import { useDispatch } from 'react-redux';
 import { login } from '../redux/authSlice';
 import { storeUser } from '../utils/storage';
+import { Strings } from '../theme/Strings';
 
 const { width, height } = Dimensions.get('window');
 
@@ -42,25 +43,65 @@ const LoginScreen = () => {
 
     if (!password) {
       newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  // const handleLogin = async () => {
+  //   if (!validateForm()) return;
+  //   const fakeUser = { name: email };
+  //   setIsLoading(true);
+  //   dispatch(login(fakeUser));
+  //   await storeUser(fakeUser);
+  //   setIsLoading(false);
+
+  // };
+
   const handleLogin = async () => {
     if (!validateForm()) return;
-    const fakeUser = { name: email };
-    setIsLoading(true);
-    dispatch(login(fakeUser));
-    await storeUser(fakeUser);
-    setIsLoading(false);
-    
-  };
 
-  
+    setIsLoading(true);
+
+    const formData = {
+      userName: email,
+      password: password,
+      mobileNo: mobile ? mobile : '',
+    };
+
+    try {
+      const response = await fetch(`${Strings.APP_BASE_URL}login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json', // or 'multipart/form-data' if using FormData
+        },
+        body: JSON.stringify(formData), // Only stringify if not using FormData
+      });
+
+      // console.log('Raw Response:', response);
+
+      const resp = await response.json(); // Use .json() to parse the response
+      //console.log('Parsed Response Data:', JSON.stringify(resp, null, 2));
+
+      if (resp?.status === 'ok') {
+        //console.log('Login Successful:', JSON.stringify(resp.data, null, 2));
+        await storeUser(resp.data.User);
+        dispatch(login(resp.data.User));
+      } else if (resp?.status === 'Fail') {
+        console.warn('Login Failed:', resp?.error);
+        Alert.alert('Login', resp?.error);
+      } else {
+        console.warn('Unexpected Login Response');
+        Alert.alert('Login', 'Something Went Wrong');
+      }
+    } catch (error) {
+      console.error('Login Error:', error.message);
+      Alert.alert('Login', 'Something Went Wrong');
+    }
+
+    setIsLoading(false);
+  };
 
   return (
     <SafeAreaView style={styles.container}>

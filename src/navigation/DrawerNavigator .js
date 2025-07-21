@@ -52,6 +52,8 @@ import VisitorBook from '../screens/FrontOffice/VisitorBook';
 import Complain from '../screens/FrontOffice/complain';
 import GatePass from '../screens/FrontOffice/GatePass';
 import SubDashBoardScreen from '../screens/SubDashBoardScreen';
+import { useSelector } from 'react-redux';
+import { getInitials } from '../theme/Strings';
 
 const Drawer = createDrawerNavigator();
 const { width } = Dimensions.get('window');
@@ -59,6 +61,7 @@ const { width } = Dimensions.get('window');
 const DrawerNavigator = () => {
   const { themeColor } = useTheme();
   const [showSearch, setShowSearch] = useState(false);
+  const { user } = useSelector(state => state.auth);
 
   return (
     <Drawer.Navigator
@@ -129,7 +132,8 @@ const DrawerNavigator = () => {
 
             <TouchableOpacity style={styles.profileButton} activeOpacity={0.7}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>AD</Text>
+                <Text style={styles.avatarText}>{getInitials(user?.user_name || 'John Doe')}</Text>
+                
               </View>
             </TouchableOpacity>
           </View>
