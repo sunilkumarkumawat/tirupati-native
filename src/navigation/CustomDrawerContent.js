@@ -36,7 +36,7 @@ const menuItems = [
     title: 'Students',
     icon: 'students',
     color: '#4facfe',
-    
+    screen: 'OTPage',
   },
   {
     id: 4,

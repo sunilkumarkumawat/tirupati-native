@@ -54,7 +54,13 @@ import GatePass from '../screens/FrontOffice/GatePass';
 import SubDashBoardScreen from '../screens/SubDashBoardScreen';
 import { useSelector } from 'react-redux';
 import { getInitials } from '../theme/Strings';
-import AppointmentPage from '../screens/Appointment';
+import AppointmentPage from '../screens/Appointment/Appointment';
+import OTPage from '../screens/OperationTheatre/OT';
+import AddPatientForm from '../screens/OperationTheatre/AddPatientForm';
+import SchedulerPreOpNoteForm from '../screens/OperationTheatre/SchedulerPreOpNoteForm';
+import PostOpNoteForm from '../screens/OperationTheatre/PostOpNoteForm';
+import EyeSurgeryNoteForm from '../screens/OperationTheatre/EyeSurgeryNoteForm';
+
 
 const Drawer = createDrawerNavigator();
 const { width } = Dimensions.get('window');
@@ -155,6 +161,11 @@ const DrawerNavigator = () => {
       <Drawer.Screen name="CurrentBalance" component={CurrentBalance} />
       <Drawer.Screen name="BalanceFeeReport" component={BalanceFeeReport} />
       <Drawer.Screen name="TransactionReport" component={TransactionReport} />
+      <Drawer.Screen name="OTPage" component={OTPage} />
+      <Drawer.Screen name="AddPatientForm" component={AddPatientForm} />
+      <Drawer.Screen name="SchedulerPreOpNoteForm" component={SchedulerPreOpNoteForm} />
+      <Drawer.Screen name="PostOpNoteForm" component={PostOpNoteForm} />
+      <Drawer.Screen name="EyeSurgeryNoteForm" component={EyeSurgeryNoteForm} />
       
 
 
