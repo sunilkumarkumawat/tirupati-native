@@ -3,47 +3,15 @@ import {
   Text,
   View,
   StyleSheet,
-  TouchableOpacity,
-  Image,
   Dimensions,
-  Alert,
+  ScrollView,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import { Strings } from '../theme/Strings';
 import { useSelector } from 'react-redux';
+import Loader from '../common/Loader';
 const { width } = Dimensions.get('window');
 const SubDashBoardScreen = () => {
-  const statsData = [
-    {
-      title: 'OPD Fees',
-      count: 'No. 20',
-      amount: '₹20/-',
-      icon: 'people',
-      color: '#3B82F6',
-    },
-    {
-      title: 'Lab Tests',
-      count: 'No. 12',
-      amount: '₹150/-',
-      icon: 'people',
-      color: '#10B981',
-    },
-    {
-      title: 'X-Ray Charges',
-      count: 'No. 8',
-      amount: '₹300/-',
-      icon: 'person',
-      color: '#F59E0B',
-    },
-    {
-      title: 'Consultation',
-      count: 'No. 5',
-      amount: '₹500/-',
-      icon: 'person',
-      color: '#EF4444',
-    },
-  ];
-
   const [dashboardData, setDashboardData] = useState([]);
   const { user } = useSelector(state => state.auth);
   const [isLoading, setIsLoading] = useState(false);
@@ -93,33 +61,56 @@ const SubDashBoardScreen = () => {
 
   return (
     <View style={styles.card}>
-      <View style={styles.cardContainer}>
-        {dashboardData && Object.keys(dashboardData).length > 0 ? (
-          Object.values(dashboardData).map((item, index) => (
-            <View key={item.id || index} style={styles.statCard}>
-              <View style={styles.statHeader}>
-                <View style={styles.statInfo}>
-                  <Text style={styles.statTitle}>{String(item.name)}</Text>
-                  <Text style={styles.statValue}>{String(item.no)}</Text>
-                  <Text style={styles.statValue}>{String(item.amount)}</Text>
-                </View>
-                <View
-                  style={[
-                    styles.statIcon,
-                    { backgroundColor: item.color || '#4B5563' },
-                  ]}
-                >
-                  <Icon name="people" size={24} color="#FFFFFF" />
+      {isLoading ? (
+        <Loader title={'Loading Dashboard...'} />
+      ) : (
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={styles.cardContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          {dashboardData && Object.keys(dashboardData).length > 0 ? (
+            Object.values(dashboardData).map((item, index) => (
+              <View
+                key={`${item.id ?? 'no-id'}-${index}`}
+                style={styles.statCard}
+              >
+                <View style={styles.statHeader}>
+                  <View style={styles.statInfo}>
+                    {item.name != null && (
+                      <Text style={styles.statTitle}>{String(item.name)}</Text>
+                    )}
+                    {item.no != null && (
+                      <Text style={styles.statValue}>
+                        No. {String(item.no)}
+                      </Text>
+                    )}
+                    {item.amount != null && (
+                      <Text style={styles.statValue}>
+                        {Array.isArray(item.amount)
+                          ? ` ${item.amount?.[0]?.[0]?.totappoin ?? '0'}`
+                          : `₹ ${String(item.amount)} /-`}
+                      </Text>
+                    )}
+                  </View>
+                  <View
+                    style={[
+                      styles.statIcon,
+                      { backgroundColor: item.color || '#4B5563' },
+                    ]}
+                  >
+                    <Icon name="stethoscope" size={24} color="#FFFFFF" />
+                  </View>
                 </View>
               </View>
-            </View>
-          ))
-        ) : (
-          <Text style={{ textAlign: 'center', padding: 10 }}>
-            No dashboard data available
-          </Text>
-        )}
-      </View>
+            ))
+          ) : (
+            <Text style={{ textAlign: 'center', padding: 10 }}>
+              No dashboard data available
+            </Text>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -127,6 +118,7 @@ const SubDashBoardScreen = () => {
 const styles = StyleSheet.create({
   card: {
     padding: 20,
+    height: 800,
   },
   statCard: {
     width: (width - 58) / 2,
@@ -176,6 +168,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginTop: 8,
     justifyContent: 'space-between',
+    paddingBottom: 100,
   },
 });
 
