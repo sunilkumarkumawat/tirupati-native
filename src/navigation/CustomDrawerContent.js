@@ -17,6 +17,87 @@ import { removeUser } from '../utils/storage';
 import { useTheme } from '../theme/ThemeContext';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
+const menuItems = [
+  {
+    id: 1,
+    title: 'Dashboard',
+    icon: 'house',
+    screen: 'Dashboard',
+    color: '#667eea',
+    submenus: [],
+  },
+  {
+    id: 2,
+    title: 'Fees Report',
+    icon: 'money',
+    screen: 'MarkStudentAttendence',
+    color: '#f093fb',
+  },
+  {
+    id: 3,
+    title: 'Students',
+    icon: 'students',
+    color: '#4facfe',
+    screen: 'OTPage',
+  },
+  {
+    id: 4,
+    title: 'Examination',
+    icon: 'exam',
+    color: '#43e97b',
+  },
+  {
+    id: 5,
+    title: 'Disciplinary',
+    icon: 'disciplinary',
+    color: '#fa709a',
+  },
+  {
+    id: 6,
+    title: 'Human Resource',
+    icon: 'desk',
+    color: '#fa709a',
+  },
+  {
+    id: 7,
+    title: 'Academics',
+    icon: 'graduate',
+    color: '#fa709a',
+  },
+  {
+    id: 8,
+    title: 'Income / Expense',
+    icon: 'salary',
+    color: '#fa709a',
+  },
+  {
+    id: 9,
+    title: 'Front Office',
+    icon: 'receptionist',
+    color: '#fa709a',
+  },
+  {
+    id: 10,
+    title: 'Homework / Classwork',
+    icon: 'write',
+    color: '#fa709a',
+  },
+  {
+    id: 11,
+    title: 'User',
+    icon: 'write',
+    color: '#fa709a',
+  },
+
+  {
+    id: 12,
+    title: 'Settings',
+    icon: 'settings',
+    color: '#a8edea',
+    screen: 'Setting',
+  },
+];
+
 const CustomDrawerContent = ({ navigation }) => {
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.auth);
