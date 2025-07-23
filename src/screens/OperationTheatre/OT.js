@@ -180,116 +180,135 @@ const OTPage = ({ navigation }) => { // Add navigation prop
 
     return (
       <View style={styles.patientCard}>
-        {/* Basic Info and Top Right 3-dot button */}
+        {/* Header with Patient Basic Info and Menu */}
         <View style={styles.patientHeader}>
-          <View style={styles.patientInfo}>
+          <View style={styles.patientMainInfo}>
             <View style={styles.avatarPlaceholder}>
               <Text style={styles.avatarText} allowFontScaling={false}>
                 {patient.patientName.split(' ').map(n => n[0]).join('').toUpperCase()}
               </Text>
             </View>
-            <View style={styles.studentDetails}>
-              <Text style={styles.studentName} allowFontScaling={false}>{patient.patientName}</Text>
-              <Text style={styles.classInfo} allowFontScaling={false}>
-                {patient.gender} • Age: {patient.age} • UHID: {patient.uhidPatientId}
-              </Text>
-              <Text style={styles.classInfo} allowFontScaling={false}>
-                DOA: {patient.doa} • Room/Ward: {patient.roomWard}
-                </Text>
-              <Text style={styles.classInfo} allowFontScaling={false}>Doctor: {patient.doctor}</Text>
+            <View style={styles.patientBasicDetails}>
+              <Text style={styles.patientName} allowFontScaling={false}>{patient.patientName}</Text>
+              <View style={styles.patientMetaRow}>
+                <Text style={styles.uhidText} allowFontScaling={false}>UHID: {patient.uhidPatientId}</Text>
+                <Text style={styles.doaText} allowFontScaling={false}>DOA: {formatDate(patient.doa)}</Text>
+              </View>
+              <View style={styles.doctorRow}>
+                <Text style={styles.doctorText} allowFontScaling={false}>Doctor: {patient.doctor}</Text>
+                <View style={styles.statusBadge}>
+                  <Text style={[styles.statusText, { color: getStatusColor(patient.status) }]} allowFontScaling={false}>
+                    {patient.status}
+                  </Text>
+                </View>
+              </View>
             </View>
           </View>
-          {/* 3-dot button in the top right corner */}
+
+          {/* 3-dot menu button */}
           <TouchableOpacity
             style={styles.threeDotButton}
             onPress={() => toggleMenu(patient.id)}
           >
-            <Text style={styles.threeDotIcon} allowFontScaling={false}>&#8942;</Text> {/* Vertical ellipsis */}
+            <Text style={styles.threeDotIcon} allowFontScaling={false}>⋮</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Dropdown Menu for 3-dot button (absolute position relative to patientCard) */}
-        {isMenuOpen && (
-          <View style={styles.dropdownMenuContainer}>
-            <TouchableOpacity
-              style={styles.dropdownMenuItem}
-              onPress={() => {
-                navigateToForm('SchedulerPreOpNoteForm', { patientId: patient.id, patientName: patient.patientName });
-                toggleMenu(null); // Close menu after selection
-              }}
-            >
-              <Text style={styles.dropdownMenuItemText} allowFontScaling={false}>Schedular & Pre Operative Note</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.dropdownMenuItem}
-              onPress={() => {
-                navigateToForm('PostOpNoteForm', { patientId: patient.id, patientName: patient.patientName });
-                toggleMenu(null);
-              }}
-            >
-              <Text style={styles.dropdownMenuItemText} allowFontScaling={false}>Post Operative Note</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.dropdownMenuItem}
-              onPress={() => {
-                navigateToForm('EyeSurgeryNoteForm', { patientId: patient.id, patientName: patient.patientName });
-                toggleMenu(null);
-              }}
-            >
-              <Text style={styles.dropdownMenuItemText} allowFontScaling={false}>Eye Surgery Note</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        {/* Dropdown Menu for 3-dot button */}
+        {
+          isMenuOpen && (
+            <View style={styles.dropdownMenuContainer}>
+              <TouchableOpacity
+                style={styles.dropdownMenuItem}
+                onPress={() => {
+                  navigateToForm('SchedulerPreOpNoteForm', { patientId: patient.id, patientName: patient.patientName });
+                  toggleMenu(null);
+                }}
+              >
+                <Text style={styles.dropdownMenuItemText} allowFontScaling={false}>Schedular & Pre Operative Note</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.dropdownMenuItem}
+                onPress={() => {
+                  navigateToForm('PostOpNoteForm', { patientId: patient.id, patientName: patient.patientName });
+                  toggleMenu(null);
+                }}
+              >
+                <Text style={styles.dropdownMenuItemText} allowFontScaling={false}>Post Operative Note</Text>
+              </TouchableOpacity>
 
-        {/* Expanded Details */}
-        {isExpanded && (
-          <View style={styles.expandedDetails}>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel} allowFontScaling={false}>IPD:</Text>
-              <Text style={styles.detailValue} allowFontScaling={false}>{patient.ipd}</Text>
+              <TouchableOpacity
+                style={styles.dropdownMenuItem}
+                onPress={() => {
+                  navigateToForm('EyeSurgeryNoteForm', { patientId: patient.id, patientName: patient.patientName });
+                  toggleMenu(null);
+                }}
+              >
+                <Text style={styles.dropdownMenuItemText} allowFontScaling={false}>Eye Surgery Note</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel} allowFontScaling={false}>Mobile:</Text>
-              <Text style={styles.detailValue} allowFontScaling={false}>{patient.mobile}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel} allowFontScaling={false}>DOA:</Text>
-              <Text style={styles.detailValue} allowFontScaling={false}>{formatDate(patient.doa)}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel} allowFontScaling={false}>DOD:</Text>
-              <Text style={styles.detailValue} allowFontScaling={false}>{formatDate(patient.dod)}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel} allowFontScaling={false}>Status:</Text>
-              <Text style={[styles.detailValue, { color: getStatusColor(patient.status) }]} allowFontScaling={false}>{patient.status}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel} allowFontScaling={false}>Room/Ward:</Text>
-              <Text style={styles.detailValue} allowFontScaling={false}>{patient.roomWard}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel} allowFontScaling={false}>Bed No:</Text>
-              <Text style={styles.detailValue} allowFontScaling={false}>{patient.bedNo}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel} allowFontScaling={false}>ID Proof:</Text>
-              <Text style={styles.detailValue} allowFontScaling={false}>{patient.idProof}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel} allowFontScaling={false}>Relative:</Text>
-              <Text style={styles.detailValue} allowFontScaling={false}>{patient.relative}</Text>
-            </View>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel} allowFontScaling={false}>Category:</Text>
-              <Text style={styles.detailValue} allowFontScaling={false}>{patient.category}</Text>
-            </View>
-          </View>
-        )}
+          )
+        }
 
-        {/* New Footer Section for See More and Action Buttons */}
+        {/* Patient Info Grid - Only visible when NOT expanded */}
+        {
+          !isExpanded && (
+            <View style={styles.compactInfoRow}>
+              <View style={styles.compactInfoItem}>
+                <Text style={styles.infoLabel} allowFontScaling={false}>AGE</Text>
+                <Text style={styles.infoValue} allowFontScaling={false}>{patient.age} yrs</Text>
+              </View>
+              <View style={styles.compactInfoItem}>
+                <Text style={styles.infoLabel} allowFontScaling={false}>GENDER</Text>
+                <Text style={styles.infoValue} allowFontScaling={false}>{patient.gender}</Text>
+              </View>
+              <View style={styles.compactInfoItem}>
+                <Text style={styles.infoLabel} allowFontScaling={false}>WARD</Text>
+                <Text style={styles.infoValue} allowFontScaling={false}>{patient.roomWard}</Text>
+              </View>
+            </View>
+          )
+        }
+
+        {/* Expanded Details - Only show details NOT already visible */}
+        {
+          isExpanded && (
+            <View style={styles.expandedDetails}>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel} allowFontScaling={false}>IPD:</Text>
+                <Text style={styles.detailValue} allowFontScaling={false}>{patient.ipd}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel} allowFontScaling={false}>Mobile:</Text>
+                <Text style={styles.detailValue} allowFontScaling={false}>{patient.mobile}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel} allowFontScaling={false}>DOD:</Text>
+                <Text style={styles.detailValue} allowFontScaling={false}>{formatDate(patient.dod)}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel} allowFontScaling={false}>Bed No:</Text>
+                <Text style={styles.detailValue} allowFontScaling={false}>{patient.bedNo}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel} allowFontScaling={false}>ID Proof:</Text>
+                <Text style={styles.detailValue} allowFontScaling={false}>{patient.idProof}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel} allowFontScaling={false}>Relative:</Text>
+                <Text style={styles.detailValue} allowFontScaling={false}>{patient.relative}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel} allowFontScaling={false}>Category:</Text>
+                <Text style={styles.detailValue} allowFontScaling={false}>{patient.category}</Text>
+              </View>
+            </View>
+          )
+        }
+
+        {/* Footer Section */}
         <View style={styles.patientCardFooter}>
-          {/* See More Button - Left Below Corner */}
           <TouchableOpacity
             style={styles.seeMoreButton}
             onPress={() => toggleCardExpansion(patient.id)}
@@ -299,20 +318,19 @@ const OTPage = ({ navigation }) => { // Add navigation prop
             </Text>
           </TouchableOpacity>
 
-          {/* View, Edit, Delete Buttons - Right Below Corner */}
           <View style={styles.bottomActionButtons}>
-            <TouchableOpacity style={[styles.actionButton, styles.rescheduleButton]}>
+            <TouchableOpacity style={[styles.actionButton, styles.viewButton]}>
               <Text style={styles.actionButtonIcon} allowFontScaling={false}>👁</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionButton, styles.completeButton]}>
+            <TouchableOpacity style={[styles.actionButton, styles.editButton]}>
               <Text style={styles.actionButtonIcon} allowFontScaling={false}>✏️</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionButton, styles.cancelButton]}>
+            <TouchableOpacity style={[styles.actionButton, styles.deleteButton]}>
               <Text style={styles.actionButtonIcon} allowFontScaling={false}>🗑️</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </View >
     )
   }
 
@@ -693,7 +711,7 @@ const styles = StyleSheet.create({
   },
   clearButtonLarge: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderRadius: 8,
     backgroundColor: "white",
     alignItems: "center",
@@ -712,7 +730,7 @@ const styles = StyleSheet.create({
   },
   applyButtonLarge: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderRadius: 8,
     backgroundColor: "#4dd0e1",
     alignItems: "center",
@@ -727,7 +745,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "white",
   },
-  // Patient card styles
+  // Patient card styles - Enhanced
   patientsList: {
     paddingBottom: 20,
   },
@@ -736,108 +754,216 @@ const styles = StyleSheet.create({
   },
   patientCard: {
     backgroundColor: "#ffffff",
-    borderRadius: 8,
-    padding: 10,
+    borderRadius: 12,
+    padding: 12, // Reduced from 16
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-    borderLeftWidth: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+    borderLeftWidth: 4,
     borderLeftColor: "#4dd0e1",
-    position: 'relative', // Added for absolute positioning of dropdown
+    position: 'relative',
   },
   patientHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 8,
+    marginBottom: 8, // Reduced from 12
   },
-  patientInfo: {
+  patientMainInfo: {
     flexDirection: "row",
     flex: 1,
     alignItems: "center",
   },
   avatarPlaceholder: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 55,
+    height: 55,
+    borderRadius: 27.5,
     backgroundColor: "#4dd0e1",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 15,
+    marginRight: 16,
+    shadowColor: "#4dd0e1",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   avatarText: {
     color: "white",
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: 22,
+    fontWeight: "800",
   },
-  studentDetails: {
+  patientBasicDetails: {
     flex: 1,
   },
-  studentName: {
-    fontSize: 16,
+  patientName: {
+    fontSize: 18,
     fontWeight: "700",
-    color: "#111827",
-    marginBottom: 4,
+    color: "#1f2937",
+    marginBottom: 6,
   },
-  classInfo: {
-    fontSize: 13,
+  patientMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 2,
+  },
+
+  doaText: {
+    fontSize: 12,
+    color: "#6b7280",
+    fontWeight: "500",
+    marginHorizontal: 8,
+  },
+
+  doctorRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 5,
+},
+  doctorText: {
+  fontSize: 13,
+  color: "#4b5563",
+  fontWeight: "500",
+  flex: 1, // Allow doctor text to take available space
+},
+
+  uhidText: {
+    fontSize: 12,
     color: "#6b7280",
     fontWeight: "500",
   },
-  // 3-dot button styles (now directly in patientHeader)
+  statusBadge: {
+  paddingHorizontal: 8,
+  paddingVertical: 2,
+  borderRadius: 12,
+  backgroundColor: "#f3f4f6",
+  marginLeft: 8, // Add some space between doctor text and status
+},
+  statusText: {
+    fontSize: 11,
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
+
+  // Three dot menu button
   threeDotButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "#f3f4f6",
+    justifyContent: "center",
+    alignItems: "center",
     width: 36,
     height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#e0e0e0", // A neutral background for the dots
-    marginLeft: 8, // Keep some margin from the patient info
   },
   threeDotIcon: {
-    fontSize: 20,
+    fontSize: 18,
     color: "#6b7280",
     fontWeight: "bold",
+    textAlign: "center",
   },
-  // Dropdown menu styles
+  // Dropdown menu for three dots
   dropdownMenuContainer: {
-    position: 'absolute',
-    top: 10, // Adjust as needed to position relative to the 3-dot button
-    right: 10, // Adjust as needed
-    backgroundColor: 'white',
+    position: "absolute",
+    top: 60,
+    right: 16,
+    backgroundColor: "#ffffff",
     borderRadius: 8,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 5,
-    zIndex: 10, // Ensure it appears above the fullScreenOverlay (zIndex: 5)
-    minWidth: 220, // Increased width to accommodate text
-    paddingVertical: 5,
+    shadowRadius: 8,
+    elevation: 10,
+    zIndex: 1000,
+    minWidth: 200,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
   },
   dropdownMenuItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3f4f6",
   },
   dropdownMenuItemText: {
     fontSize: 14,
     color: "#374151",
+    fontWeight: "500",
   },
-  // See More button and action buttons moved to a new footer
-  patientCardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
+  // Replace patientInfoGrid with this compact version:
+  compactInfoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8, // Reduced from 12
+    paddingHorizontal: 4,
+  },
+
+  compactInfoItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+  // infoItem: {
+  //   width: "48%",
+  //   marginBottom: 8,
+  // },
+  infoLabel: {
+    fontSize: 10, // Reduced from 11
+    color: "#6b7280",
+    fontWeight: "600",
+    textTransform: "uppercase",
+    marginBottom: 2, // Reduced from 2
+    textAlign: "center",
+  },
+
+  infoValue: {
+    fontSize: 13, // Reduced from 14
+    color: "#374151",
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  // Expanded details
+  expandedDetails: {
+    marginBottom: 12,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: "#e5e7eb",
+    borderTopColor: "#f3f4f6",
+  },
+  detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f9fafb",
+  },
+  detailLabel: {
+    fontSize: 13,
+    color: "#6b7280",
+    fontWeight: "600",
+    flex: 0.4,
+  },
+  detailValue: {
+    fontSize: 13,
+    color: "#374151",
+    fontWeight: "500",
+    flex: 0.6,
+    textAlign: "right",
+  },
+  // Patient card footer
+  patientCardFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#f3f4f6",
   },
   seeMoreButton: {
-    paddingVertical: 1,
-    paddingHorizontal: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
   },
   seeMoreText: {
     fontSize: 12,
@@ -846,68 +972,51 @@ const styles = StyleSheet.create({
   },
   bottomActionButtons: {
     flexDirection: "row",
-    alignItems: 'center',
+    gap: 8,
   },
   actionButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginLeft: 8,
-    alignItems: "center",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  rescheduleButton: {
+  viewButton: {
     backgroundColor: "#4dd0e1",
   },
-  completeButton: {
-    backgroundColor: "#10b981",
+  editButton: {
+    backgroundColor: "#f59e0b",
   },
-  cancelButton: {
+  deleteButton: {
     backgroundColor: "#ef4444",
   },
   actionButtonIcon: {
-    fontSize: 16,
-    color: "white",
+    fontSize: 14,
   },
-  expandedDetails: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#e5e7eb",
-  },
-  detailRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 6,
-  },
-  detailLabel: {
-    fontSize: 12,
-    color: "#6b7280",
-    fontWeight: "600",
-    flex: 1,
-  },
-  detailValue: {
-    fontSize: 12,
-    color: "#374151",
-    fontWeight: "500",
-    flex: 1,
-    textAlign: "right",
-  },
+  // Empty state
   emptyContainer: {
     alignItems: "center",
-    paddingVertical: 40,
+    justifyContent: "center",
+    paddingVertical: 60,
+    paddingHorizontal: 20,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
     color: "#6b7280",
     marginBottom: 8,
+    textAlign: "center",
   },
   emptySubtext: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#9ca3af",
-    fontWeight: "500",
     textAlign: "center",
+    lineHeight: 20,
   },
 })
 

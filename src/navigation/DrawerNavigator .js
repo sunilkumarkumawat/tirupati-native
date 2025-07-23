@@ -164,14 +164,14 @@ const DrawerNavigator = () => {
       <Drawer.Screen name="CurrentBalance" component={CurrentBalance} />
       <Drawer.Screen name="BalanceFeeReport" component={BalanceFeeReport} />
       <Drawer.Screen name="TransactionReport" component={TransactionReport} />
-      <Drawer.Screen name="OTPage" component={OTPage} />
+      <Drawer.Screen name="112" component={OTPage} />
       <Drawer.Screen name="AddPatientForm" component={AddPatientForm} />
       <Drawer.Screen name="SchedulerPreOpNoteForm" component={SchedulerPreOpNoteForm} />
       <Drawer.Screen name="PostOpNoteForm" component={PostOpNoteForm} />
       <Drawer.Screen name="EyeSurgeryNoteForm" component={EyeSurgeryNoteForm} />
       
 
-
+    
 
 
 
