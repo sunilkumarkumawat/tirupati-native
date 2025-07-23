@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
   formRow: {
     flexDirection: "row",
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   formFieldHalf: {
     flex: 1,
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     color: "#374151",
-    marginBottom: 8,
+    marginBottom: 4,
   },
   formInput: {
     paddingHorizontal: 12,
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
   },
   cancelFormButton: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 10,
     borderRadius: 8,
     backgroundColor: "white",
     alignItems: "center",
@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
   },
   saveFormButton: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 10,
     borderRadius: 8,
     backgroundColor: "#4dd0e1",
     alignItems: "center",
