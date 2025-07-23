@@ -10,13 +10,9 @@ import {
   Dimensions,
   TextInput,
   Image,
+  Alert,
 } from 'react-native';
-
-// Using React Native Vector Icons - Make sure to install: npm install react-native-vector-icons
-// and follow platform-specific setup instructions
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import IconFeather from 'react-native-vector-icons/Feather';
-import IconAntDesign from 'react-native-vector-icons/AntDesign';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 
@@ -208,8 +204,20 @@ const DashboardScreen = () => {
     </View>
   );
 
+  const navigateToScreen = screenName => {
+    Alert.alert(screenName);
+    navigation.navigate(screenName);
+    // navigation.closeDrawer();
+  };
+
   const QuickActionButton = ({ action }) => (
-    <TouchableOpacity style={styles.quickActionButton} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={styles.quickActionButton}
+      activeOpacity={0.7}
+      onPress={() => {
+        navigateToScreen(action.id);
+      }}
+    >
       <View style={[styles.quickActionIcon]}>
         <Image
           source={
@@ -221,11 +229,18 @@ const DashboardScreen = () => {
           resizeMode="contain"
         />
       </View>
-      <Text style={styles.quickActionText}>{action.modulename}</Text>
+      <Text style={styles.quickActionText}>
+        {(action.modulename || '').replace(/\s*\(.*?\)/g, '').trim()}
+      </Text>
     </TouchableOpacity>
   );
 
-  const ModuleButton = ({ module }) => {
+  const ModuleButton = ({
+    module,
+    activeModule,
+    setActiveModule,
+    setSidebarOpen,
+  }) => {
     const isActive = activeModule === module.id;
 
     return (
@@ -245,63 +260,27 @@ const DashboardScreen = () => {
         <Text
           style={[styles.moduleButtonText, isActive && { color: module.color }]}
         >
-          {module.name}
+          {module.modulename}
         </Text>
       </TouchableOpacity>
     );
   };
 
+  const hiddenModuleIds = ['50', '101', '111', '129', '135'];
+
   const renderDashboard = () => (
     <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-      {/* Welcome Section */}
-      {/* <View style={styles.welcomeSection}>
-        <Text style={styles.welcomeTitle}>Welcome back, Admin!</Text>
-        <Text style={styles.welcomeSubtitle}>Here's what's happening at your hospital today</Text>
-      </View> */}
-
-      {/* Stats Grid */}
-      {/* <View style={styles.statsGrid}>
-        {stats.map((stat, index) => (
-          <StatCard key={index} stat={stat} />
-        ))}
-      </View> */}
-
-      {/* Recent Activities & Upcoming Events */}
-      {/* <View style={styles.row}> */}
-      {/* Recent Activities */}
-      {/* <View style={[styles.card, styles.activitiesCard]}>
-          <View style={styles.cardHeader}>
-            <Icon name="history" size={20} color="#3B82F6" />
-            <Text style={styles.cardTitle}>Recent Activities</Text>
-          </View>
-          <View style={styles.activitiesList}>
-            {recentActivities.map((activity, index) => (
-              <ActivityItem key={index} activity={activity} />
-            ))}
-          </View>
-        </View> */}
-
-      {/* Upcoming Events */}
-      {/* <View style={[styles.card, styles.eventsCard]}>
-          <View style={styles.cardHeader}>
-            <Icon name="event" size={20} color="#10B981" />
-            <Text style={styles.cardTitle}>Upcoming Events</Text>
-          </View>
-          <View style={styles.eventsList}>
-            {upcomingEvents.map((event, index) => (
-              <EventItem key={index} event={event} />
-            ))}
-          </View>
-        </View> */}
-      {/* </View> */}
-
       {/* Quick Actions */}
       <View style={styles.card}>
         <View style={styles.quickActionsGrid}>
           {user?.module && Object.keys(user.module).length > 0 ? (
-            Object.values(user.module).map((module, index) => (
-              <QuickActionButton key={index.toString()} action={module} />
-            ))
+            Object.values(user.module)
+              .filter(
+                module => !hiddenModuleIds.includes(module.id?.toString()),
+              )
+              .map((module, index) => (
+                <QuickActionButton key={index.toString()} action={module} />
+              ))
           ) : (
             <Text>No modules available</Text>
           )}
@@ -312,79 +291,9 @@ const DashboardScreen = () => {
       <View style={styles.bottomPadding} />
     </ScrollView>
   );
-
-  const renderModulePlaceholder = () => {
-    const currentModule = modules.find(m => m.id === activeModule);
-
-    return (
-      <View style={styles.placeholderContainer}>
-        <View style={styles.placeholderIcon}>
-          <Icon
-            name={currentModule?.icon || 'help'}
-            size={40}
-            color="#9CA3AF"
-          />
-        </View>
-        <Text style={styles.placeholderTitle}>
-          {currentModule?.name} Module
-        </Text>
-        <Text style={styles.placeholderDescription}>
-          This module is under development. The interface will contain specific
-          functionality for managing {activeModule}.
-        </Text>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => setActiveModule('dashboard')}
-        >
-          <Icon name="arrow-back" size={20} color="#FFFFFF" />
-          <Text style={styles.backButtonText}>Back to Dashboard</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-
-      {/* Header */}
-      {/* <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity 
-            style={styles.menuButton}
-            onPress={() => setSidebarOpen(!sidebarOpen)}
-            activeOpacity={0.7}
-          >
-            <Icon name="menu" size={24} color="#374151" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>
-            {activeModule.charAt(0).toUpperCase() + activeModule.slice(1)}
-          </Text>
-        </View>
-        
-        <View style={styles.headerRight}>
-          <View style={styles.searchContainer}>
-            <Icon name="search" size={16} color="#9CA3AF" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search..."
-              placeholderTextColor="#9CA3AF"
-            />
-          </View>
-          
-          <TouchableOpacity style={styles.notificationButton} activeOpacity={0.7}>
-            <Icon name="notifications" size={20} color="#6B7280" />
-            <View style={styles.notificationBadge} />
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.profileButton} activeOpacity={0.7}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>AD</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </View> */}
-
       <View style={styles.main}>
         {/* Sidebar Overlay */}
         {sidebarOpen && (
@@ -416,9 +325,19 @@ const DashboardScreen = () => {
             style={styles.navigation}
             showsVerticalScrollIndicator={false}
           >
-            {modules.map(module => (
-              <ModuleButton key={module.id} module={module} />
-            ))}
+            {user?.module && Object.keys(user.module).length > 0 ? (
+              Object.values(user.module).map(module => (
+                <ModuleButton
+                  key={module.id}
+                  module={module}
+                  activeModule={activeModule}
+                  setActiveModule={setActiveModule}
+                  setSidebarOpen={setSidebarOpen}
+                />
+              ))
+            ) : (
+              <Text>No modules available</Text>
+            )}
           </ScrollView>
 
           <View style={styles.sidebarFooter}>

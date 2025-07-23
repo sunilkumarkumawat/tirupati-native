@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Text,
   View,
@@ -6,8 +6,11 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { Strings } from '../theme/Strings';
+import { useSelector } from 'react-redux';
 const { width } = Dimensions.get('window');
 const SubDashBoardScreen = () => {
   const statsData = [
@@ -41,23 +44,81 @@ const SubDashBoardScreen = () => {
     },
   ];
 
+  const [dashboardData, setDashboardData] = useState([]);
+  const { user } = useSelector(state => state.auth);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const dashboard = async () => {
+    if (!user?.branch_id) return;
+
+    setIsLoading(true);
+    const formData = {
+      branch_id: user?.branch_id,
+    };
+
+    try {
+      const response = await fetch(`${Strings.APP_BASE_URL}dashboard`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const resp = await response.json();
+
+      if (resp?.status === 'ok') {
+        console.log('Dashboard:', JSON.stringify(resp.data, null, 2));
+        setDashboardData(resp.data);
+      } else {
+        console.warn(
+          'Dashboard fetch failed:',
+          resp?.message || 'Unknown error',
+        );
+      }
+    } catch (error) {
+      console.error('Dashboard Error:', error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.branch_id) {
+      dashboard();
+    }
+  }, [user?.branch_id]);
+
+  //Alert.alert('Dashboard Data', JSON.stringify(dashboardData, null, 2));
+
   return (
     <View style={styles.card}>
       <View style={styles.cardContainer}>
-        {statsData.map((item, index) => (
-          <View key={index} style={styles.statCard}>
-            <View style={styles.statHeader}>
-              <View style={styles.statInfo}>
-                <Text style={styles.statTitle}>{item.title}</Text>
-                <Text style={styles.statValue}>{item.count}</Text>
-                <Text style={styles.statValue}>{item.amount}</Text>
-              </View>
-              <View style={[styles.statIcon, { backgroundColor: item.color }]}>
-                <Icon name={item.icon} size={24} color="#FFFFFF" />
+        {dashboardData && Object.keys(dashboardData).length > 0 ? (
+          Object.values(dashboardData).map((item, index) => (
+            <View key={item.id || index} style={styles.statCard}>
+              <View style={styles.statHeader}>
+                <View style={styles.statInfo}>
+                  <Text style={styles.statTitle}>{String(item.name)}</Text>
+                  <Text style={styles.statValue}>{String(item.no)}</Text>
+                  <Text style={styles.statValue}>{String(item.amount)}</Text>
+                </View>
+                <View
+                  style={[
+                    styles.statIcon,
+                    { backgroundColor: item.color || '#4B5563' },
+                  ]}
+                >
+                  <Icon name="people" size={24} color="#FFFFFF" />
+                </View>
               </View>
             </View>
-          </View>
-        ))}
+          ))
+        ) : (
+          <Text style={{ textAlign: 'center', padding: 10 }}>
+            No dashboard data available
+          </Text>
+        )}
       </View>
     </View>
   );

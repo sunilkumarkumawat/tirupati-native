@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from 'react-native';
+import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
 const AlertModal = ({ visible, title, message, onClose, onConfirm }) => {
   return (
@@ -21,11 +15,14 @@ const AlertModal = ({ visible, title, message, onClose, onConfirm }) => {
           {message && <Text style={styles.message}>{message}</Text>}
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button} onPress={onClose}>
+            {/* <TouchableOpacity style={styles.button} onPress={onClose}>
               <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
-            <TouchableOpacity style={[styles.button, styles.okButton]} onPress={onConfirm}>
+            <TouchableOpacity
+              style={[styles.button, styles.okButton]}
+              onPress={onConfirm}
+            >
               <Text style={[styles.buttonText, styles.okButtonText]}>OK</Text>
             </TouchableOpacity>
           </View>
@@ -74,13 +71,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   okButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#7be7e7',
   },
   buttonText: {
     fontSize: 16,
     color: '#000',
   },
   okButtonText: {
-    color: '#fff',
+    color: '#000',
   },
 });

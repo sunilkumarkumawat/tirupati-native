@@ -9,122 +9,19 @@ import {
   Alert,
   Animated,
   StyleSheet,
+  TextInput,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../redux/authSlice';
 import { removeUser } from '../utils/storage';
 import { useTheme } from '../theme/ThemeContext';
-
-const menuItems = [
-  {
-    id: 1,
-    title: 'Dashboard',
-    icon: 'house',
-    screen: 'Dashboard',
-    color: '#667eea',
-    submenus: [],
-  },
-  {
-    id: 2,
-    title: 'Fees Report',
-    icon: 'money',
-    screen: 'MarkStudentAttendence',
-    color: '#f093fb',
-  },
-  {
-    id: 3,
-    title: 'Students',
-    icon: 'students',
-    color: '#4facfe',
-    
-  },
-  {
-    id: 4,
-    title: 'Examination',
-    icon: 'exam',
-    color: '#43e97b',
-  },
-  {
-    id: 5,
-    title: 'Disciplinary',
-    icon: 'disciplinary',
-    color: '#fa709a',
-  },
-  {
-    id: 6,
-    title: 'Human Resource',
-    icon: 'desk',
-    color: '#fa709a',
-  },
-  {
-    id: 7,
-    title: 'Academics',
-    icon: 'graduate',
-    color: '#fa709a',
-  },
-  {
-    id: 8,
-    title: 'Income / Expense',
-    icon: 'salary',
-    color: '#fa709a',
-  },
-  {
-    id: 9,
-    title: 'Front Office',
-    icon: 'receptionist',
-    color: '#fa709a',
-  },
-  {
-    id: 10,
-    title: 'Homework / Classwork',
-    icon: 'write',
-    color: '#fa709a',
-  },
-  {
-    id: 11,
-    title: 'User',
-    icon: 'write',
-    color: '#fa709a',
-  },
-
-  {
-    id: 12,
-    title: 'Settings',
-    icon: 'settings',
-    color: '#a8edea',
-    screen: 'Setting',
-  },
-];
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const CustomDrawerContent = ({ navigation }) => {
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.auth);
-  const [expandedMenus, setExpandedMenus] = useState({});
-  const [animatedValues] = useState({});
-  const [activeItemId, setActiveItemId] = useState(1);
+  const [activeItemId, setActiveItemId] = useState();
   const { themeColor } = useTheme();
-
-  //console.log('User Data:', JSON.stringify(user, null, 2));
-
-
-  useEffect(() => {
-    menuItems.forEach(item => {
-      if (item.submenus?.length) {
-        animatedValues[item.id] = new Animated.Value(0);
-      }
-    });
-  }, []);
-
-  const toggleSubmenu = menuId => {
-    const isExpanded = expandedMenus[menuId];
-    setExpandedMenus(prev => ({ ...prev, [menuId]: !prev[menuId] }));
-
-    Animated.timing(animatedValues[menuId], {
-      toValue: isExpanded ? 0 : 1,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  };
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure?', [
@@ -140,37 +37,19 @@ const CustomDrawerContent = ({ navigation }) => {
     ]);
   };
 
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchText, setSearchText] = useState('');
+
+  const filteredModules = Object.values(user.module).filter(item =>
+    item.modulename.toLowerCase().includes(searchText.toLowerCase()),
+  );
+
   const navigateToScreen = screenName => {
     navigation.navigate(screenName);
     navigation.closeDrawer();
   };
 
-  const iconMap = {
-    house: require('../theme/asserts/icon/house.png'),
-    desk: require('../theme/asserts/icon/desk.png'),
-    disciplinary: require('../theme/asserts/icon/disciplinary.png'),
-    exam: require('../theme/asserts/icon/exam.png'),
-    graduate: require('../theme/asserts/icon/graduate.png'),
-    money: require('../theme/asserts/icon/money.png'),
-    receptionist: require('../theme/asserts/icon/receptionist.png'),
-    salary: require('../theme/asserts/icon/salary.png'),
-    students: require('../theme/asserts/icon/students.png'),
-    write: require('../theme/asserts/icon/write.png'),
-    settings: require('../theme/asserts/icon/settings.png'),
-    // add all icons here
-  };
-
-  const renderIcon = (item, size = 22) => (
-    // <Text style={{ fontSize: size }}>{item.icon}</Text>
-    // <Icon name={item.icon} size={22} color={'#6B7280'} />
-    <Image
-      source={
-        iconMap[item.icon] || require('../theme/asserts/icon/default.png')
-      } // optional fallback icon
-      style={{ width: 18, height: 18 }}
-      resizeMode="contain"
-    />
-  );
+  const hiddenModuleIds = ['50', '101', '111', '129', '135'];
 
   return (
     <View style={styles.drawerContainer}>
@@ -189,7 +68,9 @@ const CustomDrawerContent = ({ navigation }) => {
             <View style={styles.onlineIndicator} />
           </View>
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{user?.user_name || 'John Doe'}</Text>
+            <Text style={styles.profileName}>
+              {user?.user_name || 'John Doe'}
+            </Text>
             <View style={styles.profileBadge}>
               <Text style={styles.profileRole}>
                 {user?.role_name || 'Administrator'}
@@ -198,69 +79,73 @@ const CustomDrawerContent = ({ navigation }) => {
           </View>
         </View>
       </View>
+      <View
+        style={{ borderBottomWidth: 1, height: 45, borderColor: '#f3f4f6' }}
+      >
+        <View style={[styles.searchContainer, { width: 280 }]}>
+          <TouchableOpacity onPress={() => setShowSearch(!showSearch)}>
+            <Icon
+              name="search"
+              size={18}
+              color="#9CA3AF"
+              style={styles.searchIcon}
+            />
+          </TouchableOpacity>
+
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search..."
+            placeholderTextColor="#9CA3AF"
+            onChangeText={setSearchText}
+            value={searchText}
+          />
+        </View>
+      </View>
 
       <ScrollView style={{ flex: 1, paddingTop: 6 }}>
-        {menuItems.map(item => (
-          <View key={item.id} style={{ paddingBottom: 4, paddingTop: 6 }}>
-            <TouchableOpacity
-              style={[
-                styles.moduleButton,
-                activeItemId === item.id && styles.moduleButtonActive,
-              ]}
-              onPress={() => {
-                setActiveItemId(item.id); // <-- Mark active
-                navigateToScreen(item.screen);
-              }}
-              activeOpacity={0.7}
-            >
-              <Image
-                source={
-                  iconMap[item.icon] ||
-                  require('../theme/asserts/icon/default.png')
-                } // optional fallback icon
-                style={{ width: 18, height: 18 }}
-                resizeMode="contain"
-              />
-              <Text
-                style={[
-                  styles.moduleButtonText,
-                  activeItemId === item.id && { color: module.color },
-                ]}
-              >
-                {item.title}
-              </Text>
-              {/* <Text>
-                {renderIcon(item)} {' '} {item.title}
-              </Text> */}
-              {/* {item.submenus.length > 0 && (
-                <Text>{expandedMenus[item.id] ? '▲' : '▼'}</Text>
-              )} */}
-            </TouchableOpacity>
-
-            {/* {item.submenus.length > 0 && (
-              <Animated.View
-                style={{
-                  maxHeight:
-                    animatedValues[item.id]?.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, item.submenus.length * 40],
-                    }) || 0,
-                  overflow: 'hidden',
-                }}
-              >
-                {item.submenus.map(sub => (
-                  <TouchableOpacity
-                    key={sub.id}
-                    onPress={() => navigateToScreen(sub.screen)}
-                    style={{ paddingLeft: 30, paddingVertical: 10 }}
+        {filteredModules.filter(
+          item => !hiddenModuleIds.includes(item.id?.toString()),
+        ).length > 0 ? (
+          filteredModules
+            .filter(item => !hiddenModuleIds.includes(item.id?.toString()))
+            .map(item => (
+              <View key={item.id}>
+                <TouchableOpacity
+                  style={[
+                    styles.moduleButton,
+                    activeItemId === item.id && styles.moduleButtonActive,
+                  ]}
+                  onPress={() => {
+                    setActiveItemId(item.id); // <-- Mark active
+                    navigateToScreen(item.id);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Image
+                    source={
+                      item.image_url
+                        ? { uri: item.image_url }
+                        : require('../theme/asserts/icon/default.png')
+                    }
+                    style={{ width: 18, height: 18 }}
+                    resizeMode="contain"
+                  />
+                  <Text
+                    style={[
+                      styles.moduleButtonText,
+                      activeItemId === item.id && { color: '#667eea' },
+                    ]}
                   >
-                    <Text>{sub.title}</Text>
-                  </TouchableOpacity>
-                ))}
-              </Animated.View>
-            )} */}
-          </View>
-        ))}
+                    {(item.modulename || '').replace(/\s*\(.*?\)/g, '').trim()}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ))
+        ) : (
+          <Text style={{ textAlign: 'center', marginTop: 10 }}>
+            This Module Not Found
+          </Text>
+        )}
       </ScrollView>
 
       <View style={styles.logoutSection}>
@@ -488,9 +373,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingVertical: 8,
     marginHorizontal: 12,
-    borderRadius: 12,
+    borderRadius: 8,
     marginBottom: 4,
   },
   moduleButtonActive: {
@@ -503,6 +388,23 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
     color: '#6B7280',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(221, 226, 235, 1)',
+    borderRadius: 20,
+    padding: 3,
+    margin: 'auto',
+    height: 35,
+    paddingLeft: 9,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#374151',
+    padding: 0,
   },
 });
 

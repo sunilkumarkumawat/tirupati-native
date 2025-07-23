@@ -11,7 +11,7 @@ const Footer = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const items = [
-    { label: 'Home', icon: 'home', screen: 'Dashboard' },
+    { label: 'Home', icon: 'home', screen: 'Home' },
     {
       label: 'Appointment',
       icon: 'appointment',

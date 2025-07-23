@@ -74,7 +74,7 @@ const DrawerNavigator = () => {
         },
         headerShown: true,
         headerStyle: {
-          backgroundColor: themeColor, // 🟢 use dynamic color
+          backgroundColor: themeColor,
         },
         headerTintColor: '#000',
         headerTitleStyle: {
@@ -105,7 +105,9 @@ const DrawerNavigator = () => {
 
         headerRight: () => (
           <View style={styles.headerRight}>
-            <View style={[styles.searchContainer, { width: showSearch ? 150 : 40 }  ]}>
+            <View
+              style={[styles.searchContainer, { width: showSearch ? 150 : 40 }]}
+            >
               <TouchableOpacity onPress={() => setShowSearch(!showSearch)}>
                 <Icon
                   name="search"
@@ -133,15 +135,16 @@ const DrawerNavigator = () => {
 
             <TouchableOpacity style={styles.profileButton} activeOpacity={0.7}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{getInitials(user?.user_name || 'John Doe')}</Text>
-                
+                <Text style={styles.avatarText}>
+                  {getInitials(user?.user_name || 'John Doe')}
+                </Text>
               </View>
             </TouchableOpacity>
           </View>
         ),
       })}
     >
-      <Drawer.Screen name="Dashboard" component={DashboardScreen} />
+      <Drawer.Screen name="Home" component={DashboardScreen} />
       <Drawer.Screen name="Test" component={Test} />
       <Drawer.Screen name="StudentAttendence" component={StudentAttendence} />
       <Drawer.Screen name="StudentView" component={StudentView} />
@@ -155,12 +158,6 @@ const DrawerNavigator = () => {
       <Drawer.Screen name="CurrentBalance" component={CurrentBalance} />
       <Drawer.Screen name="BalanceFeeReport" component={BalanceFeeReport} />
       <Drawer.Screen name="TransactionReport" component={TransactionReport} />
-      
-
-
-
-
-
 
       <Drawer.Screen
         name="DailyCollectionReport"
@@ -204,9 +201,10 @@ const DrawerNavigator = () => {
       <Drawer.Screen name="VisitorBook" component={VisitorBook} />
       <Drawer.Screen name="Complain" component={Complain} />
       <Drawer.Screen name="GatePass" component={GatePass} />
-      <Drawer.Screen name="SubDashBoard" component={SubDashBoardScreen} />
+      <Drawer.Screen name="1" component={SubDashBoardScreen} />
 
       <Drawer.Screen name="Setting" component={Setting} />
+      <Drawer.Screen name="16" component={AppointmentPage} />
     </Drawer.Navigator>
   );
 };
@@ -224,7 +222,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     borderRadius: 20,
     padding: 10,
-   
   },
   // searchIcon: {
   //   marginRight: 8,

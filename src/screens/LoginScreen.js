@@ -19,6 +19,7 @@ import { useDispatch } from 'react-redux';
 import { login } from '../redux/authSlice';
 import { storeUser } from '../utils/storage';
 import { Strings } from '../theme/Strings';
+import AlertModal from '../common/AlertModal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,6 +34,16 @@ const LoginScreen = () => {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [mobileFocused, setMobileFocused] = useState(false);
+
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertTitle, setAlertTitle] = useState('Login');
+
+  const showAlert = (title = 'Alert', message = 'Something went wrong') => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -74,9 +85,9 @@ const LoginScreen = () => {
       const response = await fetch(`${Strings.APP_BASE_URL}login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json', // or 'multipart/form-data' if using FormData
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData), // Only stringify if not using FormData
+        body: JSON.stringify(formData),
       });
 
       // console.log('Raw Response:', response);
@@ -90,14 +101,17 @@ const LoginScreen = () => {
         dispatch(login(resp.data.User));
       } else if (resp?.status === 'Fail') {
         console.warn('Login Failed:', resp?.error);
-        Alert.alert('Login', resp?.error);
+        //Alert.alert('Login', resp?.error);
+        showAlert('Login Failed', resp?.error || 'Invalid credentials');
       } else {
         console.warn('Unexpected Login Response');
-        Alert.alert('Login', 'Something Went Wrong');
+        //Alert.alert('Login', 'Something Went Wrong');
+        showAlert('Login', 'Something went wrong');
       }
     } catch (error) {
       console.error('Login Error:', error.message);
-      Alert.alert('Login', 'Something Went Wrong');
+      //Alert.alert('Login', 'Something Went Wrong');
+      showAlert('Login Error', error.message || 'Something went wrong');
     }
 
     setIsLoading(false);
@@ -285,6 +299,13 @@ const LoginScreen = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <AlertModal
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+        onConfirm={() => setAlertVisible(false)}
+      />
     </SafeAreaView>
   );
 };
