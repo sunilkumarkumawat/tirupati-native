@@ -864,6 +864,7 @@ const styles = StyleSheet.create({
     color: "#6b7280",
     fontWeight: "bold",
     textAlign: "center",
+    lineHeight: 18, 
   },
   // Dropdown menu for three dots
   dropdownMenuContainer: {
