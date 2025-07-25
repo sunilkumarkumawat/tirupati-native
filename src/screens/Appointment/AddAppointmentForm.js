@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   TextInput,
   SafeAreaView,
   Alert,
   Keyboard, // Import Keyboard to dismiss it
 } from "react-native";
+import { ScrollView } from 'react-native-gesture-handler';
 
 // Options for dropdowns (moved from Appointment.js)
 const panelMedicalAidOptions = ["General Panel", "Insurance Panel", "Corporate Panel", "VIP Panel", "Senior Citizen Panel"];
@@ -18,7 +18,7 @@ const genderOptions = ["Male", "Female", "Other"];
 const doctorOptions = ["Dr. Priya Singh", "Dr. Amit Kumar", "Dr. Kavya Reddy", "Dr. Rajesh Gupta", "Dr. Sunita Sharma"];
 const idProofOptions = ["Aadhar", "PAN Card", "Driving License", "Voter ID", "Passport"];
 const infoSourceOptions = ["Online", "Phone", "Walk-in", "Referral"];
-const locationOptions = ["OPD Block A", "OPD Block B", "OPD Block C", "Emergency", "VIP Block"];
+// const locationOptions = ["OPD Block A", "OPD Block B", "OPD Block C", "Emergency", "VIP Block"];
 const royaltyCardOptions = ["Regular", "Silver Member", "Gold Member", "Platinum Member"];
 
 const AddAppointmentForm = ({ route, navigation }) => {
@@ -30,7 +30,7 @@ const AddAppointmentForm = ({ route, navigation }) => {
   // Form states (moved from Appointment.js)
   const [newAppointment, setNewAppointment] = useState({
     appointmentId: "",
-    panelMedicalAid: "General Panel", // Changed from "Gen.Panel" for consistency with options
+    panelMedicalAid: "Gen. Panel", // Changed from "Gen.Panel" for consistency with options
     tokenNumber: "",
     salutation: "Mr",
     patientName: "",
@@ -43,7 +43,7 @@ const AddAppointmentForm = ({ route, navigation }) => {
     doctor: "Dr. Priya Singh",
     address: "",
     infoSource: "Online",
-    location: "OPD Block A",
+    location: "",
     uhidPatientId: "",
     idProof: "Aadhar",
     royaltyCard: "Regular",
@@ -186,7 +186,13 @@ const AddAppointmentForm = ({ route, navigation }) => {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+       <ScrollView
+              style={styles.formContainer}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={styles.formContentContainer}
+              bounces={false}
+            >
         {/* 1st Row: Appointment ID, Panel Medical AID, Token Number */}
         <View style={styles.formRow}>
           <View style={styles.formFieldThird}>
@@ -367,13 +373,21 @@ const AddAppointmentForm = ({ route, navigation }) => {
           </View>
           <View style={[styles.formFieldHalf, showFormLocationDropdown && { zIndex: 5000 }]}>
             <Text style={styles.formLabel} allowFontScaling={false}>Location</Text>
-            {renderDropdown(
+            {/* {renderDropdown(
               locationOptions,
               newAppointment.location,
               (value) => setNewAppointment(prev => ({ ...prev, location: value })),
               showFormLocationDropdown,
               setShowFormLocationDropdown
-            )}
+            )} */}
+            <TextInput
+              style={styles.formInput}
+              placeholder="Enter Location"
+              value={newAppointment.location}
+              onChangeText={(text) => setNewAppointment(prev => ({ ...prev, location: text }))}
+              placeholderTextColor="#9ca3af"
+              allowFontScaling={false}
+            />
           </View>
         </View>
 
@@ -520,7 +534,7 @@ const styles = StyleSheet.create({
   },
   cancelFormButton: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 10,
     borderRadius: 8,
     backgroundColor: "white",
     alignItems: "center",
@@ -534,7 +548,7 @@ const styles = StyleSheet.create({
   },
   saveFormButton: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 10,
     borderRadius: 8,
     backgroundColor: "#4dd0e1",
     alignItems: "center",
