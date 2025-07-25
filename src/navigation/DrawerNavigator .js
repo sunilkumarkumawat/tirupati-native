@@ -60,6 +60,7 @@ import AddPatientForm from '../screens/OperationTheatre/AddPatientForm';
 import SchedulerPreOpNoteForm from '../screens/OperationTheatre/SchedulerPreOpNoteForm';
 import PostOpNoteForm from '../screens/OperationTheatre/PostOpNoteForm';
 import EyeSurgeryNoteForm from '../screens/OperationTheatre/EyeSurgeryNoteForm';
+import AddAppointmentForm from '../screens/Appointment/AddAppointmentForm';
 
 
 const Drawer = createDrawerNavigator();
@@ -222,6 +223,7 @@ const DrawerNavigator = () => {
 
       <Drawer.Screen name="Setting" component={Setting} />
       <Drawer.Screen name="16" component={AppointmentPage} />
+      <Drawer.Screen name="AddAppointmentForm" component={AddAppointmentForm} />
     </Drawer.Navigator>
   );
 };

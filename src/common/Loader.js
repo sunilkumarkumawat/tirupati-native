@@ -1,9 +1,9 @@
 // components/Loader.js
 import React from 'react';
-import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, Animated, Easing, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
-const Loader = ({title}) => {
+const Loader = ({ title }) => {
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
 
   React.useEffect(() => {
@@ -21,7 +21,7 @@ const Loader = ({title}) => {
           useNativeDriver: true,
           easing: Easing.inOut(Easing.ease),
         }),
-      ])
+      ]),
     ).start();
   }, []);
 
@@ -31,7 +31,11 @@ const Loader = ({title}) => {
         <View style={styles.iconContainer}>
           <Icon name="stethoscope" style={styles.icon} />
           <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-            <Icon name="heart" style={[styles.icon, { color: 'red' }]} solid />
+            <Image
+              source={require('../theme/asserts/icon/heart.png')} // optional fallback icon
+              style={{ width: 43, height: 43 }}
+              resizeMode="contain"
+            />
           </Animated.View>
           <Icon name="hospital" style={styles.icon} />
         </View>
@@ -46,7 +50,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    margin:'auto'
+    margin: 'auto',
   },
   loaderBox: {
     backgroundColor: '#e3f2fd',
