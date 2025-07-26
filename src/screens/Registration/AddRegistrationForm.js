@@ -34,6 +34,10 @@ const wardRoomOptions = ["Ward A", "Ward B", "Room 101", "Room 102", "ICU 1", "E
 const bedRoomNoOptions = ["A-1", "A-2", "B-1", "B-2", "101-A", "101-B", "ICU-Bed1"] // Example options
 const idProofTypeOptions = ["Aadhar Card", "PAN Card", "Voter ID", "Passport", "Driving License", "Other"] // NEW: ID Proof Type Options
 
+// NEW: Table specific dropdown options
+const tableCategoryOptions = ["Consultation", "Procedure", "Medicine", "Lab Test", "Accommodation", "Other"]
+const tablePaymentModeOptions = ["Cash", "Card", "UPI", "Net Banking", "Insurance", "Cheque"]
+
 
 // Options for the new header 3-dot menu in AddRegistrationForm
 const headerMenuOptions = [
@@ -71,21 +75,26 @@ const AddRegistrationForm = ({ navigation, route }) => {
   const [showBedRoomNoDropdown, setShowBedRoomNoDropdown] = useState(false);
   const [showIdProofTypeDropdown, setShowIdProofTypeDropdown] = useState(false); // NEW: For ID Proof Type
 
+  // NEW: Dropdown states for the table
+  // Using an array of states for dynamic dropdowns in table rows
+  const [showTableCategoryDropdowns, setShowTableCategoryDropdowns] = useState([]);
+  const [showTablePaymentModeDropdowns, setShowTablePaymentModeDropdowns] = useState([]);
+
 
   const [newPatient, setNewPatient] = useState({
     patientName: "",
     middleName: "",
     surname: "",
-    uhidPatientId: "",
-    ipd: "",
+    uhidPatientId: "", // Now potentially required
+    ipd: "", // Now required
     age: "",
     gender: "Male",
     mobile: "",
     doctor: "", // Now from dropdown
     doa: "",
-    dod: "",
+    dod: "", // NEW: DOD field
     status: "Active", // Now from dropdown
-    roomWard: "", // Now from dropdown
+    roomWard: "", // Now from dropdown and required
     bedNo: "", // Now from dropdown
     idProof: "", // This is the 'ID Proof' field
     relative: "", // This is the 'Relative' field from previous
@@ -136,7 +145,7 @@ const AddRegistrationForm = ({ navigation, route }) => {
     dueCredit: "0",
 
     // NEW FIELDS FROM EARLIER IN THIS TURN
-    panelCompany: "",
+    panelCompany: "", // Now required
     specialization: "",
     nextToKin: "", // Renamed from 'relative'
 
@@ -145,11 +154,26 @@ const AddRegistrationForm = ({ navigation, route }) => {
     reasonForAdmit: "", // NEW (Form Input)
     diagnosis: "", // NEW (Form Input)
     procedureSurgery: "", // NEW (Form Input)
+    dayIpdNo: "", // NEW (Form Input), required
+    icuEmergencyNo: "", // NEW (Form Input), required
     // Removed days and time from newPatient, now managed by scheduleEntries
   })
 
   // NEW STATE FOR DYNAMIC SCHEDULE ENTRIES
   const [scheduleEntries, setScheduleEntries] = useState([{ days: "", time: "" }]);
+
+  // NEW STATE FOR DYNAMIC PAYMENT ENTRIES (Table)
+  const [paymentEntries, setPaymentEntries] = useState([{
+    sr: 1, category: "", itemName: "", qty: "1", amt: "", total: "0", paymentMode: ""
+  }]);
+
+  const [grandTotal, setGrandTotal] = useState(0);
+
+  // Effect to update grandTotal whenever paymentEntries change
+  React.useEffect(() => {
+    const total = paymentEntries.reduce((sum, entry) => sum + parseFloat(entry.total || 0), 0);
+    setGrandTotal(total);
+  }, [paymentEntries]);
 
 
   // Generate UHID and IPD - now using existingPatients from props
@@ -176,9 +200,16 @@ const AddRegistrationForm = ({ navigation, route }) => {
     if (!newPatient.patientName || !newPatient.mobile || !newPatient.doa || !newPatient.age ||
       !newPatient.panelCompany || !newPatient.doctor || !newPatient.nextToKin ||
       !newPatient.status || !newPatient.dialysisUnit || !newPatient.bedNo || // New required dropdowns
-      !newPatient.diagnosis || !newPatient.procedureSurgery // New required text inputs
+      !newPatient.diagnosis || !newPatient.procedureSurgery || // New required text inputs
+      !newPatient.uhidPatientId || !newPatient.ipd || !newPatient.dayIpdNo || !newPatient.icuEmergencyNo || // NEW required inputs
+      !newPatient.roomWard // NEW required dropdown
     ) {
-      Alert.alert("Error", "Please fill in all required fields (Patient Name, Mobile, DOA, Age, Panel/Company, Doctor, Relative/Next to kin, Status, Dialysis Unit, Bed/Room No, Diagnosis, Procedure/Surgery).")
+      Alert.alert(
+        "Error",
+        "Please fill in all required fields:\n" +
+        "Patient Name, Mobile, DOA, Age, Panel/Company, Doctor, Relative/Next to kin, Status, Dialysis Unit, Bed/Room No, Diagnosis, Procedure/Surgery, " +
+        "UHID/Patient ID, IPD No., Day IPD No., ICU/Emergency No., Ward/Room."
+      );
       return
     }
 
@@ -188,10 +219,11 @@ const AddRegistrationForm = ({ navigation, route }) => {
         ? Math.max(...existingPatients.map(p => p.id)) + 1
         : 1, // If no existing patients, start with ID 1
       ...newPatient,
-      uhidPatientId: newPatient.uhidPatientId || generateUHID(),
-      ipd: newPatient.ipd || generateIPD(),
+      uhidPatientId: newPatient.uhidPatientId || generateUHID(), // Still generate if empty, but now it's required so user should fill
+      ipd: newPatient.ipd || generateIPD(), // Still generate if empty, but now it's required so user should fill
       age: parseInt(newPatient.age),
       scheduleEntries: scheduleEntries, // Include dynamic schedule entries
+      paymentEntries: paymentEntries, // Include dynamic payment entries
     }
 
     // Call the onAddPatient callback passed from OTPage
@@ -215,8 +247,11 @@ const AddRegistrationForm = ({ navigation, route }) => {
       advanceDeposit: "0", dueCredit: "0",
       panelCompany: "", specialization: "", nextToKin: "",
       dialysisUnit: "", reasonForAdmit: "", diagnosis: "", procedureSurgery: "",
+      dayIpdNo: "", icuEmergencyNo: "", // Reset new fields
     })
     setScheduleEntries([{ days: "", time: "" }]); // Reset schedule entries
+    setPaymentEntries([{ sr: 1, category: "", itemName: "", qty: "1", amt: "", total: "0", paymentMode: "" }]); // Reset payment entries
+    setGrandTotal(0);
 
     Alert.alert("Success", "Patient added successfully!")
     // Navigate back after successful addition using the onCancel prop
@@ -239,6 +274,10 @@ const AddRegistrationForm = ({ navigation, route }) => {
     setShowWardRoomDropdown(false);
     setShowBedRoomNoDropdown(false);
     setShowIdProofTypeDropdown(false); // NEW: Close ID Proof Type dropdown
+
+    // NEW: Close all table dropdowns
+    setShowTableCategoryDropdowns(paymentEntries.map(() => false));
+    setShowTablePaymentModeDropdowns(paymentEntries.map(() => false));
 
 
     setShowHeaderMenu(false); // Close header menu as well
@@ -813,6 +852,148 @@ const AddRegistrationForm = ({ navigation, route }) => {
     });
   };
 
+  // NEW: Functions for dynamic payment entries (Table)
+  const addPaymentEntry = () => {
+    setPaymentEntries(prevEntries => [
+      ...prevEntries,
+      { sr: prevEntries.length + 1, category: "", itemName: "", qty: "1", amt: "", total: "0", paymentMode: "" }
+    ]);
+    // Initialize dropdown states for the new row
+    setShowTableCategoryDropdowns(prev => [...prev, false]);
+    setShowTablePaymentModeDropdowns(prev => [...prev, false]);
+  };
+
+  const removePaymentEntry = (index) => {
+    setPaymentEntries(prevEntries => prevEntries.filter((_, i) => i !== index).map((entry, i) => ({ ...entry, sr: i + 1 })));
+    // Remove dropdown states for the deleted row
+    setShowTableCategoryDropdowns(prev => prev.filter((_, i) => i !== index));
+    setShowTablePaymentModeDropdowns(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handlePaymentEntryChange = (value, field, index) => {
+    setPaymentEntries(prevEntries => {
+      const updatedEntries = [...prevEntries];
+      let newQty = parseFloat(updatedEntries[index].qty || 0);
+      let newAmt = parseFloat(updatedEntries[index].amt || 0);
+
+      if (field === "qty") {
+        newQty = parseFloat(value || 0);
+      } else if (field === "amt") {
+        newAmt = parseFloat(value || 0);
+      }
+
+      updatedEntries[index] = { ...updatedEntries[index], [field]: value };
+      updatedEntries[index].total = (newQty * newAmt).toFixed(2); // Calculate total
+
+      return updatedEntries;
+    });
+  };
+
+  // NEW: Table Category Dropdown Render Function
+  const renderTableCategoryDropdown = (index) => (
+    // The zIndex is crucial here to ensure the dropdown appears above other table cells.
+    // It should be higher than other cells but lower than the full-screen modal overlay if any.
+    // Using a base zIndex plus index ensures that later rows' dropdowns appear above earlier rows' dropdowns.
+    <View style={[styles.dropdownWrapper, { zIndex: showTableCategoryDropdowns[index] ? 1000 + (paymentEntries.length - index) : 1 }]}>
+      <TouchableOpacity
+        style={[styles.dropdownContainer, styles.tableDropdownContainer]}
+        onPress={() => {
+          closeAllDropdowns(); // Close other dropdowns
+          setShowTableCategoryDropdowns(prev => {
+            const newStates = [...prev];
+            newStates[index] = !newStates[index];
+            return newStates;
+          });
+        }}
+      >
+        <Text style={styles.dropdownValue} allowFontScaling={false}>{paymentEntries[index].category || "Select"}</Text>
+        <Text style={styles.dropdownArrowSmall} allowFontScaling={false}>▼</Text>
+      </TouchableOpacity>
+      {showTableCategoryDropdowns[index] && (
+        <View style={[styles.dropdownOptions, styles.tableDropdownOptions]}>
+          <ScrollView
+            style={styles.optionsScrollView}
+            nestedScrollEnabled={true}
+            showsVerticalScrollIndicator={true}
+            keyboardShouldPersistTaps="handled"
+            persistentScrollbar={true}
+            indicatorStyle="black"
+          >
+            {tableCategoryOptions.map((option, optIndex) => (
+              <TouchableOpacity
+                key={optIndex}
+                style={[styles.dropdownOption, paymentEntries[index].category === option && styles.selectedOption]}
+                onPress={() => {
+                  handlePaymentEntryChange(option, "category", index);
+                  setShowTableCategoryDropdowns(prev => {
+                    const newStates = [...prev];
+                    newStates[index] = false;
+                    return newStates;
+                  });
+                }}
+              >
+                <Text style={[styles.optionText, paymentEntries[index].category === option && styles.selectedOptionText]} allowFontScaling={false}>
+                  {option}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  );
+
+  // NEW: Table Payment Mode Dropdown Render Function
+  const renderTablePaymentModeDropdown = (index) => (
+    <View style={[styles.dropdownWrapper, { zIndex: showTablePaymentModeDropdowns[index] ? 1000 + (paymentEntries.length - index) : 1 }]}>
+      <TouchableOpacity
+        style={[styles.dropdownContainer, styles.tableDropdownContainer]}
+        onPress={() => {
+          closeAllDropdowns(); // Close other dropdowns
+          setShowTablePaymentModeDropdowns(prev => {
+            const newStates = [...prev];
+            newStates[index] = !newStates[index];
+            return newStates;
+          });
+        }}
+      >
+        <Text style={styles.dropdownValue} allowFontScaling={false}>{paymentEntries[index].paymentMode || "Select"}</Text>
+        <Text style={styles.dropdownArrowSmall} allowFontScaling={false}>▼</Text>
+      </TouchableOpacity>
+      {showTablePaymentModeDropdowns[index] && (
+        <View style={[styles.dropdownOptions, styles.tableDropdownOptions]}>
+          <ScrollView
+            style={styles.optionsScrollView}
+            nestedScrollEnabled={true}
+            showsVerticalScrollIndicator={true}
+            keyboardShouldPersistTaps="handled"
+            persistentScrollbar={true}
+            indicatorStyle="black"
+          >
+            {tablePaymentModeOptions.map((option, optIndex) => (
+              <TouchableOpacity
+                key={optIndex}
+                style={[styles.dropdownOption, paymentEntries[index].paymentMode === option && styles.selectedOption]}
+                onPress={() => {
+                  handlePaymentEntryChange(option, "paymentMode", index);
+                  setShowTablePaymentModeDropdowns(prev => {
+                    const newStates = [...prev];
+                    newStates[index] = false;
+                    return newStates;
+                  });
+                }}
+              >
+                <Text style={[styles.optionText, paymentEntries[index].paymentMode === option && styles.selectedOptionText]} allowFontScaling={false}>
+                  {option}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  );
+
 
   // Function to handle header 3-dot button press
   const handleHeaderMenuPress = () => {
@@ -897,7 +1078,7 @@ const AddRegistrationForm = ({ navigation, route }) => {
         {/* First Row: UHID, Patient Type, Medical Plan */}
         <View style={styles.formRow}>
           <View style={styles.formFieldThird}>
-            <Text style={styles.formLabel} allowFontScaling={false}>UHID/Patient ID</Text>
+            <Text style={styles.formLabel} allowFontScaling={false}>UHID/Patient ID *</Text>
             <TextInput
               style={styles.formInput}
               placeholder="Auto-generated"
@@ -947,6 +1128,59 @@ const AddRegistrationForm = ({ navigation, route }) => {
             />
           </View>
         </View>
+
+        {/* NEW Row: DOD, IPD No.*, Day IPD No.* */}
+        <View style={styles.formRow}>
+          <View style={styles.formFieldThird}>
+            <Text style={styles.formLabel} allowFontScaling={false}>DOD (Date of Discharge)</Text>
+            <TextInput
+              style={styles.formInput}
+              placeholder="YYYY-MM-DD"
+              value={newPatient.dod}
+              onChangeText={(text) => setNewPatient(prev => ({ ...prev, dod: text }))}
+              placeholderTextColor="#9ca3af"
+              allowFontScaling={false}
+            />
+          </View>
+          <View style={styles.formFieldThird}>
+            <Text style={styles.formLabel} allowFontScaling={false}>IPD No. *</Text>
+            <TextInput
+              style={styles.formInput}
+              placeholder="Auto-generated"
+              value={newPatient.ipd}
+              onChangeText={(text) => setNewPatient(prev => ({ ...prev, ipd: text }))}
+              placeholderTextColor="#9ca3af"
+              allowFontScaling={false}
+            />
+          </View>
+          <View style={styles.formFieldThird}>
+            <Text style={styles.formLabel} allowFontScaling={false}>Day IPD No. *</Text>
+            <TextInput
+              style={styles.formInput}
+              placeholder="Enter Day IPD No."
+              value={newPatient.dayIpdNo}
+              onChangeText={(text) => setNewPatient(prev => ({ ...prev, dayIpdNo: text }))}
+              placeholderTextColor="#9ca3af"
+              keyboardType="numeric"
+              allowFontScaling={false}
+            />
+          </View>
+        </View>
+
+        {/* NEW Row: ICU/Emergency No.* */}
+        <View style={styles.formSection}>
+          <Text style={styles.formLabel} allowFontScaling={false}>ICU/Emergency No. *</Text>
+          <TextInput
+            style={styles.formInput}
+            placeholder="Enter ICU/Emergency No."
+            value={newPatient.icuEmergencyNo}
+            onChangeText={(text) => setNewPatient(prev => ({ ...prev, icuEmergencyNo: text }))}
+            placeholderTextColor="#9ca3af"
+            keyboardType="numeric"
+            allowFontScaling={false}
+          />
+        </View>
+
 
         {/* Third Row: Patient Name, Middle Name, Surname */}
         <View style={styles.formRow}>
@@ -1107,7 +1341,7 @@ const AddRegistrationForm = ({ navigation, route }) => {
         {/* Eighth Row: Panel/Company, Doctor, Specialization */}
         <View style={styles.formRow}>
           <View style={styles.formFieldThird}>
-            <Text style={styles.formLabel} allowFontScaling={false}>Panel/Company *</Text>
+            <Text style={styles.formLabel} allowFontScaling={false}>Panel *</Text>
             {renderPanelCompanyDropdown()}
           </View>
           <View style={styles.formFieldThird}>
@@ -1148,7 +1382,7 @@ const AddRegistrationForm = ({ navigation, route }) => {
         {/* NEW: Eleventh Row: Ward/Room, Bed/Room No */}
         <View style={styles.formRow}>
           <View style={styles.formFieldHalf}>
-            <Text style={styles.formLabel} allowFontScaling={false}>Ward/Room</Text>
+            <Text style={styles.formLabel} allowFontScaling={false}>Ward/Room *</Text>
             {renderWardRoomDropdown()}
           </View>
           <View style={styles.formFieldHalf}>
@@ -1547,10 +1781,93 @@ const AddRegistrationForm = ({ navigation, route }) => {
         </View>
 
 
-        {/* Advance/Deposit and Due/Credit Section - Simplified */}
+        {/* Financial Summary Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle} allowFontScaling={false}>Financial Summary</Text>
         </View>
+
+        {/* Item/Service & Payment Details Table */}
+        <View style={styles.tableOuterContainer}>
+          <ScrollView horizontal={true} showsHorizontalScrollIndicator={true} style={styles.horizontalScrollView}>
+            <View style={styles.tableInnerContainer}>
+              <View style={styles.tableHeaderRow}>
+                <Text style={styles.tableHeaderCellSr} allowFontScaling={false}>Sr.</Text>
+                <Text style={styles.tableHeaderCellCategory} allowFontScaling={false}>Category</Text>
+                <Text style={styles.tableHeaderCellItem} allowFontScaling={false}>Item Name</Text>
+                <Text style={styles.tableHeaderCellQty} allowFontScaling={false}>Qty</Text>
+                <Text style={styles.tableHeaderCellAmt} allowFontScaling={false}>Amt</Text>
+                <Text style={styles.tableHeaderCellTotal} allowFontScaling={false}>Total</Text>
+                <Text style={styles.tableHeaderCellPaymentMode} allowFontScaling={false}>Payment Mode</Text>
+                <Text style={styles.tableHeaderCellAction} allowFontScaling={false}>Action</Text>
+              </View>
+              {paymentEntries.map((entry, index) => (
+                <View key={index} style={styles.tableRow}>
+                  <Text style={styles.tableCellSr} allowFontScaling={false}>{entry.sr}</Text>
+                  <View style={styles.tableCellCategory}>
+                    {renderTableCategoryDropdown(index)}
+                  </View>
+                  <View style={styles.tableCellItem}>
+                    <TextInput
+                      style={styles.tableInput}
+                      value={entry.itemName}
+                      onChangeText={(text) => handlePaymentEntryChange(text, "itemName", index)}
+                      placeholder="Item"
+                      placeholderTextColor="#9ca3af"
+                      allowFontScaling={false}
+                    />
+                  </View>
+                  <View style={styles.tableCellQty}>
+                    <TextInput
+                      style={styles.tableInput}
+                      value={entry.qty}
+                      onChangeText={(text) => handlePaymentEntryChange(text, "qty", index)}
+                      keyboardType="numeric"
+                      placeholder="Qty"
+                      placeholderTextColor="#9ca3af"
+                      allowFontScaling={false}
+                    />
+                  </View>
+                  <View style={styles.tableCellAmt}>
+                    <TextInput
+                      style={styles.tableInput}
+                      value={entry.amt}
+                      onChangeText={(text) => handlePaymentEntryChange(text, "amt", index)}
+                      keyboardType="numeric"
+                      placeholder="Amt"
+                      placeholderTextColor="#9ca3af"
+                      allowFontScaling={false}
+                    />
+                  </View>
+                  <Text style={styles.tableCellTotal} allowFontScaling={false}>{entry.total}</Text>
+                  <View style={styles.tableCellPaymentMode}>
+                    {renderTablePaymentModeDropdown(index)}
+                  </View>
+                  <View style={styles.tableCellAction}>
+                    {paymentEntries.length > 1 && (
+                      <TouchableOpacity
+                        style={styles.tableDeleteButton}
+                        onPress={() => removePaymentEntry(index)}
+                      >
+                        <Text style={styles.deleteButtonText} allowFontScaling={false}>X</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+          <TouchableOpacity style={styles.addTableRowButton} onPress={addPaymentEntry}>
+            <Text style={styles.addTableRowButtonText} allowFontScaling={false}>+ Add Item</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.grandTotalContainer}>
+          <Text style={styles.grandTotalLabel} allowFontScaling={false}>Grand Total:</Text>
+          <Text style={styles.grandTotalValue} allowFontScaling={false}>₹{grandTotal.toFixed(2)}</Text>
+        </View>
+
+
+        {/* Advance/Deposit and Due/Credit Section - Simplified */}
         <View style={styles.formRow}>
           <View style={styles.formFieldHalf}>
             <Text style={styles.formLabel} allowFontScaling={false}>Advance/Deposit</Text>
@@ -1576,12 +1893,6 @@ const AddRegistrationForm = ({ navigation, route }) => {
               allowFontScaling={false}
             />
           </View>
-        </View>
-        {/* Placeholder for the dynamic table. You'll need to implement this separately if needed. */}
-        <View style={styles.placeholderTable}>
-          <Text style={styles.placeholderText}>
-            (Dynamic Item/Service & Payment Table Not Implemented Here)
-          </Text>
         </View>
 
 
@@ -1798,7 +2109,7 @@ const styles = StyleSheet.create({
   },
   dropdownWrapper: {
     position: "relative",
-    zIndex: 1,
+    // zIndex will be managed dynamically for dropdowns, high for active, low for inactive.
   },
   dropdownContainer: {
     flexDirection: "row",
@@ -1806,10 +2117,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 12,
+    fontSize: 14, // For consistency
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#e5e7eb",
     backgroundColor: "white",
+    color: "#374151",
     elevation: 1,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -1820,6 +2133,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#374151",
     fontWeight: "500",
+    flex: 1, // Allow text to take space
   },
   dropdownArrowSmall: {
     fontSize: 12,
@@ -1841,7 +2155,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 15,
-    zIndex: 1000,
+    // zIndex handled dynamically
   },
   optionsScrollView: {
     flex: 1,
@@ -1863,22 +2177,6 @@ const styles = StyleSheet.create({
   selectedOptionText: {
     color: "#4dd0e1",
     fontWeight: "600",
-  },
-  placeholderTable: { // NEW: Placeholder for the financial table
-    backgroundColor: '#f3f4f6',
-    padding: 20,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    height: 150, // Give it some height
-  },
-  placeholderText: { // NEW: Text for the placeholder
-    fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'center',
   },
   scheduleEntryRow: { // NEW: Style for each dynamic Days/Time row
     flexDirection: 'row',
@@ -1917,6 +2215,205 @@ const styles = StyleSheet.create({
     color: '#047857', // Darker green text
     fontWeight: 'bold',
     fontSize: 18,
+  },
+
+  // NEW: Table Styles
+  tableOuterContainer: { // New container for horizontal scroll
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 8,
+    marginBottom: 20,
+    backgroundColor: 'white',
+    overflow: 'hidden',
+  },
+  horizontalScrollView: {
+    // No specific styles needed here, its child will define the width
+  },
+  tableInnerContainer: { // This will hold all the rows and headers, determining the scrollable width
+    flexDirection: 'column',
+    minWidth: 600, // Minimum width for the table to ensure horizontal scroll
+    // The sum of all column widths below should add up to this or more
+  },
+  tableHeaderRow: {
+    flexDirection: 'row',
+    backgroundColor: '#f3f4f6',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    gap: 5, // Gap between header cells
+  },
+  tableHeaderCellSr: { // Sr.
+    width: 30, // Fixed width
+    fontWeight: 'bold',
+    fontSize: 12,
+    color: '#374151',
+    textAlign: 'center',
+  },
+  tableHeaderCellCategory: { // Category
+    width: 90, // Adjusted width
+    fontWeight: 'bold',
+    fontSize: 12,
+    color: '#374151',
+    textAlign: 'center',
+  },
+  tableHeaderCellItem: { // Item Name
+    width: 120, // Adjusted width
+    fontWeight: 'bold',
+    fontSize: 12,
+    color: '#374151',
+    textAlign: 'center',
+  },
+  tableHeaderCellQty: { // Qty
+    width: 50, // Adjusted width
+    fontWeight: 'bold',
+    fontSize: 12,
+    color: '#374151',
+    textAlign: 'center',
+  },
+  tableHeaderCellAmt: { // Amt
+    width: 80, // Adjusted width
+    fontWeight: 'bold',
+    fontSize: 12,
+    color: '#374151',
+    textAlign: 'center',
+  },
+  tableHeaderCellTotal: { // Total
+    width: 80, // Adjusted width
+    fontWeight: 'bold',
+    fontSize: 12,
+    color: '#374151',
+    textAlign: 'center',
+  },
+  tableHeaderCellPaymentMode: { // Payment Mode
+    width: 100, // Adjusted width
+    fontWeight: 'bold',
+    fontSize: 12,
+    color: '#374151',
+    textAlign: 'center',
+  },
+  tableHeaderCellAction: { // Action (for delete)
+    width: 40, // Adjusted width
+    fontWeight: 'bold',
+    fontSize: 12,
+    color: '#374151',
+    textAlign: 'center',
+  },
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f3f4f6',
+    paddingVertical: 5, // Reduced padding
+    paddingHorizontal: 5,
+    alignItems: 'center',
+    gap: 5, // Gap between cells in a row
+  },
+  tableCellSr: {
+    width: 30,
+    fontSize: 12,
+    color: '#374151',
+    textAlign: 'center',
+    paddingVertical: 5, // Match input vertical padding
+  },
+  tableCellCategory: {
+    width: 90,
+    justifyContent: 'center', // Center content vertically
+  },
+  tableCellItem: {
+    width: 120,
+    justifyContent: 'center',
+  },
+  tableCellQty: {
+    width: 50,
+    justifyContent: 'center',
+  },
+  tableCellAmt: {
+    width: 80,
+    justifyContent: 'center',
+  },
+  tableCellTotal: {
+    width: 80,
+    fontSize: 12,
+    color: '#374151',
+    textAlign: 'center',
+    fontWeight: '600',
+    paddingVertical: 5, // Match input vertical padding
+  },
+  tableCellPaymentMode: {
+    width: 100,
+    justifyContent: 'center',
+  },
+  tableCellAction: {
+    width: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tableInput: {
+    paddingHorizontal: 5,
+    paddingVertical: 8, // Adjusted to match dropdown height better
+    fontSize: 12,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    backgroundColor: "white",
+    color: "#374151",
+    width: '100%',
+    minHeight: 38, // Ensure consistent height
+  },
+  tableDeleteButton: {
+    backgroundColor: '#ef4444',
+    borderRadius: 15,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addTableRowButton: {
+    backgroundColor: '#e0f2f7', // Light blue
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+    marginHorizontal: 10, // Add some margin to align with table
+    marginBottom: 5, // Space before grand total
+  },
+  addTableRowButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#00796b', // Teal color
+  },
+  tableDropdownContainer: { // Smaller dropdown for table cells
+    paddingVertical: 8, // Match tableInput paddingVertical
+    paddingHorizontal: 5, // Match tableInput paddingHorizontal
+    minHeight: 38, // Ensure consistent height with text input
+    borderColor: "#e5e7eb", // Explicit border color
+    borderWidth: 1, // Explicit border width
+    borderRadius: 4, // Smaller border radius
+  },
+  tableDropdownOptions: { // Adjust dropdown options for table
+    maxHeight: 120, // Smaller height
+    // Position 'top' will be handled by default 'position: "absolute"' and 'top: "100%"'
+  },
+  grandTotalContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#dcfce7', // Light green background
+    borderRadius: 8,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+  },
+  grandTotalLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#16a34a', // Dark green
+  },
+  grandTotalValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#16a34a',
   },
 });
 
