@@ -63,6 +63,8 @@ import EyeSurgeryNoteForm from '../screens/OperationTheatre/EyeSurgeryNoteForm';
 import AddAppointmentForm from '../screens/Appointment/AddAppointmentForm';
 import Registration from '../screens/Registration/Registration';
 import AddRegistrationForm from '../screens/Registration/AddRegistrationForm';
+import Laboratory from '../screens/Laboratory/Laboratory';
+import LabotaryPage from '../screens/Laboratory/Laboratory';
 
 
 const Drawer = createDrawerNavigator();
@@ -174,6 +176,7 @@ const DrawerNavigator = () => {
       <Drawer.Screen name="EyeSurgeryNoteForm" component={EyeSurgeryNoteForm} />
       <Drawer.Screen name="2" component={Registration} />
       <Drawer.Screen name="AddRegistrationForm" component={AddRegistrationForm} />
+      <Drawer.Screen name="5" component={LabotaryPage} />
 
     
 
