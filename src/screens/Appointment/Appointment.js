@@ -18,6 +18,7 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import CustomDropdown from '../../common/CustomDropdown ';
 import Loader from '../../common/Loader';
 import { fetchGenders } from '../../redux/genderSlice';
+import { fetchDoctors } from '../../redux/doctorSlice';
 
 // Define the single appointment template to match OT.js's single patient display
 
@@ -32,7 +33,8 @@ const AppointmentPage = ({ navigation }) => {
     status: '',
   });
 
-  const genders = useSelector(state => state.gender.gender || []);
+  // const genders = useSelector(state => state.gender.genders || []);
+  const doctors = useSelector(state => state.doctors.doctors || []);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [expandedCards, setExpandedCards] = useState({});
   const { user } = useSelector(state => state.auth);
@@ -43,11 +45,14 @@ const AppointmentPage = ({ navigation }) => {
   const [paginatedData, setPaginatedData] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
 
-  const API_URL = Strings.APP_BASE_URL || "";
-   const dispatch = useDispatch();
+  const API_URL = Strings.APP_BASE_URL || '';
+  const brach_id = user?.branch_id || '';
+  // console.log('brach_id:', brach_id || 'Unknown error');
+  const dispatch = useDispatch();
   useEffect(() => {
     if (API_URL) {
-      dispatch(fetchGenders({ API_URL }));
+      // dispatch(fetchGenders({ API_URL }));
+      dispatch(fetchDoctors({ API_URL, branchId: brach_id }));
     }
   }, [API_URL, dispatch]);
 
@@ -119,7 +124,6 @@ const AppointmentPage = ({ navigation }) => {
     setFilters({
       patientName: '',
       mobile: '',
-      gender: '',
       status: '',
       doctor: '',
     });
@@ -188,10 +192,65 @@ const AppointmentPage = ({ navigation }) => {
               </Text>
             </View>
             <View style={styles.patientBasicDetails}>
-              <Text style={styles.patientName} allowFontScaling={false}>
-                {PatientSalutation.salutation ?? ''}{' '}
-                {Appointment.patient_name ?? '-'} {Appointment.l_name}
-              </Text>
+              <View style={[styles.patientMetaRow]}>
+                <Text style={styles.patientName} allowFontScaling={false}>
+                  {PatientSalutation.salutation ?? ''}{' '}
+                  {Appointment.patient_name ?? '-'} {Appointment.l_name}
+                </Text>
+                <View style={styles.bottomActionButtons}>
+                  {/* Renamed buttons to match OT.js but kept original colors */}
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.viewButton]}
+                  >
+                    <Text
+                      style={styles.actionButtonIcon}
+                      allowFontScaling={false}
+                    >
+                      👁
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.editButton]}
+                  >
+                    <Text
+                      style={styles.actionButtonIcon}
+                      allowFontScaling={false}
+                    >
+                      ✏️
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.actionButton, styles.deleteButton]}
+                    onPress={() => {
+                      Alert.alert(
+                        'Confirm Delete',
+                        'Are you sure you want to delete this appointment?',
+                        [
+                          {
+                            text: 'Cancel',
+                            style: 'cancel',
+                          },
+                          {
+                            text: 'Yes',
+                            onPress: () =>
+                              handleDeleteAppointment(Appointment.id),
+                            style: 'destructive',
+                          },
+                        ],
+                        { cancelable: true },
+                      );
+                    }}
+                  >
+                    <Text
+                      style={styles.actionButtonIcon}
+                      allowFontScaling={false}
+                    >
+                      🗑️
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
               <View style={styles.patientMetaRow}>
                 <Text style={styles.uhidText} allowFontScaling={false}>
                   UHID: {appt.uhidPatientId ?? '-'}
@@ -259,7 +318,7 @@ const AppointmentPage = ({ navigation }) => {
                 DOB:
               </Text>
               <Text style={styles.detailValue} allowFontScaling={false}>
-                {formatDate(Appointment.dob)}
+                {formatDate(Appointment.date_brith)}
               </Text>
             </View>
             <View style={styles.detailRow}>
@@ -307,45 +366,6 @@ const AppointmentPage = ({ navigation }) => {
               {isExpanded ? 'See Less' : 'See More...'}
             </Text>
           </TouchableOpacity>
-
-          <View style={styles.bottomActionButtons}>
-            {/* Renamed buttons to match OT.js but kept original colors */}
-            <TouchableOpacity style={[styles.actionButton, styles.viewButton]}>
-              <Text style={styles.actionButtonIcon} allowFontScaling={false}>
-                👁
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.actionButton, styles.editButton]}>
-              <Text style={styles.actionButtonIcon} allowFontScaling={false}>
-                ✏️
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.deleteButton]}
-              onPress={() => {
-                Alert.alert(
-                  'Confirm Delete',
-                  'Are you sure you want to delete this appointment?',
-                  [
-                    {
-                      text: 'Cancel',
-                      style: 'cancel',
-                    },
-                    {
-                      text: 'Yes',
-                      onPress: () => handleDeleteAppointment(Appointment.id),
-                      style: 'destructive',
-                    },
-                  ],
-                  { cancelable: true },
-                );
-              }}
-            >
-              <Text style={styles.actionButtonIcon} allowFontScaling={false}>
-                🗑️
-              </Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     );
@@ -387,21 +407,12 @@ const AppointmentPage = ({ navigation }) => {
     }
   };
 
-   Alert.alert('Gender', JSON.stringify(genders, null, 2));
+  //Alert.alert('Doctor', JSON.stringify(doctors, null, 2));
 
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Removed: Full-screen overlay as three-dot menu is gone */}
-
-      <ScrollView
-        style={styles.container}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        bounces={false}
-        overScrollMode="never"
-        // Adjusted scrollEnabled as showMenuForAppointmentId is removed
-        scrollEnabled={!showFilterDropdown}
-      >
+      <View style={styles.filterContainer}>
         {/* Filter and Add Button Row */}
         <View style={styles.searchAndAddContainer}>
           <View style={styles.searchContainer}>
@@ -450,78 +461,68 @@ const AppointmentPage = ({ navigation }) => {
                 nestedScrollEnabled={true}
                 contentContainerStyle={styles.filterContentContainer}
               >
-                {/* Patient Name Filter */}
-                <View style={styles.filterSection}>
-                  <Text style={styles.filterLabel} allowFontScaling={false}>
-                    Patient Name
-                  </Text>
-                  <TextInput
-                    style={styles.filterInput}
-                    placeholder="Enter patient name"
-                    value={filters.patientName}
-                    onChangeText={text =>
-                      handleFilterChange('patientName', text)
-                    }
-                    placeholderTextColor="#9ca3af"
-                    allowFontScaling={false}
-                  />
-                </View>
+                <View
+                  style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 13 }}
+                >
+                  {/* Patient Name Filter */}
+                  <View style={styles.filterSection}>
+                    <Text style={styles.filterLabel} allowFontScaling={false}>
+                      Patient Name
+                    </Text>
+                    <TextInput
+                      style={styles.filterInput}
+                      placeholder="Enter patient name"
+                      value={filters.patientName}
+                      onChangeText={text =>
+                        handleFilterChange('patientName', text)
+                      }
+                      placeholderTextColor="#9ca3af"
+                      allowFontScaling={false}
+                    />
+                  </View>
 
-                {/* Mobile Filter */}
-                <View style={styles.filterSection}>
-                  <Text style={styles.filterLabel} allowFontScaling={false}>
-                    Mobile
-                  </Text>
-                  <TextInput
-                    style={styles.filterInput}
-                    placeholder="Enter mobile number"
-                    value={filters.mobile}
-                    onChangeText={text => handleFilterChange('mobile', text)}
-                    placeholderTextColor="#9ca3af"
-                    keyboardType="phone-pad"
-                    allowFontScaling={false}
-                  />
-                </View>
+                  {/* Mobile Filter */}
+                  <View style={styles.filterSection}>
+                    <Text style={styles.filterLabel} allowFontScaling={false}>
+                      Mobile
+                    </Text>
+                    <TextInput
+                      style={styles.filterInput}
+                      placeholder="Enter mobile number"
+                      value={filters.mobile}
+                      onChangeText={text => handleFilterChange('mobile', text)}
+                      placeholderTextColor="#9ca3af"
+                      keyboardType="phone-pad"
+                      allowFontScaling={false}
+                    />
+                  </View>
 
-                {/* Gender Filter */}
-                <View style={styles.filterSection}>
-                  <CustomDropdown
-                    label="Gender"
-                    selectedValue={filters.gender}
-                    onSelect={val => handleFilterChange('gender', val)}
-                    options={genders.map(item => ({
-                      label: item.label, // Replace with actual key from API
-                      value: item.value, // Replace with actual key from API
-                    }))}
-                  />
-                </View>
-
-                {/* Status Filter */}
-                <View style={styles.filterSection}>
-                  <CustomDropdown
-                    label="Status"
-                    selectedValue={filters.status}
-                    onSelect={val => handleFilterChange('status', val)}
-                    options={[
-                      { label: 'Pending', value: 'pending' },
-                      { label: 'Confirmed', value: 'confirmed' },
-                      { label: 'Completed', value: 'completed' },
-                      { label: 'Cancelled', value: 'cancelled' },
-                    ]}
-                  />
-                </View>
-                {/* Doctor Filter */}
-                <View style={styles.filterSection}>
-                  <CustomDropdown
-                    label="Doctor"
-                    selectedValue={filters.doctor}
-                    onSelect={val => handleFilterChange('doctor', val)}
-                    options={[
-                      { label: 'Dr. Smith', value: '1' },
-                      { label: 'Dr. Jane Doe', value: '2' },
-                      { label: 'Dr. Gupta', value: '3' },
-                    ]}
-                  />
+                  {/* Status Filter */}
+                  <View style={styles.filterSection}>
+                    <CustomDropdown
+                      label="Status"
+                      selectedValue={filters.status}
+                      onSelect={val => handleFilterChange('status', val)}
+                      options={[
+                        { label: 'Pending', value: 'pending' },
+                        { label: 'Confirmed', value: 'confirmed' },
+                        { label: 'Completed', value: 'completed' },
+                        { label: 'Cancelled', value: 'cancelled' },
+                      ]}
+                    />
+                  </View>
+                  {/* Doctor Filter */}
+                  <View style={styles.filterSection}>
+                    <CustomDropdown
+                      label="Doctor"
+                      selectedValue={filters.doctor}
+                      onSelect={val => handleFilterChange('doctor', val)}
+                      options={doctors.map(item => ({
+                        label: item.label, // Replace with actual key from API
+                        value: item.value, // Replace with actual key from API
+                      }))}
+                    />
+                  </View>
                 </View>
 
                 {/* Filter Action Buttons */}
@@ -556,7 +557,17 @@ const AppointmentPage = ({ navigation }) => {
             </View>
           </View>
         )}
+      </View>
 
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        bounces={false}
+        overScrollMode="never"
+        // Adjusted scrollEnabled as showMenuForAppointmentId is removed
+        scrollEnabled={!showFilterDropdown}
+      >
         {/* Appointment List */}
         <View style={styles.patientsList}>
           {isLoading ? (
@@ -682,8 +693,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   addAppointmentButton: {
-    width: 50, // Fixed width for the button
-    height: 50, // Fixed height for the button
+    width: 40, // Fixed width for the button
+    height: 40, // Fixed height for the button
     borderRadius: 8,
     backgroundColor: '#4dd0e1',
     alignItems: 'center',
@@ -716,7 +727,8 @@ const styles = StyleSheet.create({
     borderColor: '#e5e7eb',
     borderRadius: 8,
     marginTop: 4,
-    height: 400,
+    maxHeight: 400,
+    height: 'auto',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.15,
@@ -738,6 +750,7 @@ const styles = StyleSheet.create({
   },
   filterSection: {
     marginBottom: 12,
+    width: '48%',
   },
   filterLabel: {
     fontSize: 12,
@@ -838,7 +851,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 5,
   },
   patientMainInfo: {
     // Renamed from patientInfo
@@ -847,9 +860,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarPlaceholder: {
-    width: 55, // Adjusted from 50
-    height: 55, // Adjusted from 50
-    borderRadius: 27.5, // Adjusted from 25
+    width: 38, // Adjusted from 50
+    height: 38, // Adjusted from 50
+    borderRadius: 5, // Adjusted from 25
     backgroundColor: '#4dd0e1',
     justifyContent: 'center',
     alignItems: 'center',
@@ -970,13 +983,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: '#f3f4f6',
+    paddingTop: 5,
   },
   seeMoreButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     alignSelf: 'flex-end', // Ensure it aligns to the right if not using full row
   },
   seeMoreText: {
@@ -989,16 +1001,17 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 25,
+    height: 25,
+    borderRadius: 2,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    borderRadius: 40,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.1,
+    // shadowRadius: 3,
+    // elevation: 2,
   },
   viewButton: {
     // Reschedule in Appointment.js now maps to View in OT.js
@@ -1072,6 +1085,9 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     marginTop: '50%',
+  },
+  filterContainer: {
+    padding: 10,
   },
 });
 
