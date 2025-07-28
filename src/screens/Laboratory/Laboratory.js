@@ -22,15 +22,21 @@ Text.defaultProps.allowFontScaling = false;
 TextInput.defaultProps = TextInput.defaultProps || {};
 TextInput.defaultProps.allowFontScaling = false;
 
-// Dummy data for lab tests
+// Dummy data for lab tests - Added sampleId for demonstration
 const LAB_TESTS = [
-  { id: 'cbp', name: 'CBP - Complete Blood Picture' },
-  { id: 'lp', name: 'LP - Lipid Profile' },
-  { id: 'lft', name: 'LFT - Liver Function Test' },
-  { id: 'serum_electrolyte', name: 'Serum Electrolyte (Na/K/Cl)' },
-  { id: 'blood_sugar', name: 'Blood Sugar (F/PP/R)' },
-  { id: 'bt_ct', name: 'BT/CT - Bleeding Time & Clotting Time' },
-  { id: 'blood_grouping', name: 'Blood Grouping (ABO & Rh)' },
+  { id: 'cbp', name: 'CBP - Complete Blood Picture', sampleId: 'SAMP001' },
+  { id: 'lp', name: 'LP - Lipid Profile', sampleId: 'SAMP002' },
+  { id: 'lft', name: 'LFT - Liver Function Test', sampleId: 'SAMP003' },
+  { id: 'serum_electrolyte', name: 'Serum Electrolyte (Na/K/Cl)', sampleId: 'SAMP004' },
+  { id: 'blood_sugar', name: 'Blood Sugar (F/PP/R)', sampleId: 'SAMP005' },
+  { id: 'bt_ct', name: 'BT/CT - Bleeding Time & Clotting Time', sampleId: 'SAMP006' },
+  { id: 'blood_grouping', name: 'Blood Grouping (ABO & Rh)', sampleId: 'SAMP007' },
+  // Add more tests to see scrolling in action
+  { id: 'thyroid', name: 'Thyroid Function Test (TFT)', sampleId: 'SAMP008' },
+  { id: 'urine_analysis', name: 'Urine Analysis', sampleId: 'SAMP009' },
+  { id: 'hba1c', name: 'HbA1c', sampleId: 'SAMP010' },
+  { id: 'vitd', name: 'Vitamin D', sampleId: 'SAMP011' },
+  { id: 'b12', name: 'Vitamin B12', sampleId: 'SAMP012' },
 ];
 
 const LabotaryPage = ({ navigation }) => {
@@ -48,7 +54,14 @@ const LabotaryPage = ({ navigation }) => {
   // State for the new test selection table
   const [selectedTests, setSelectedTests] = useState([]);
   const [checkAll, setCheckAll] = useState(false);
-  const [testDates, setTestDates] = useState({}); // To store dates for each test
+  // Initialize testDates with a default for CBP, and empty for others
+  const [testDates, setTestDates] = useState(() => {
+    const initialDates = {};
+    const today = new Date();
+    const formattedToday = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+    initialDates['cbp'] = formattedToday; // Set default date for CBP
+    return initialDates;
+  });
 
   const API_URL = Strings.APP_BASE_URL || '';
   const branch_id = user?.branch_id || '';
@@ -369,7 +382,8 @@ const LabotaryPage = ({ navigation }) => {
             </View>
           </View>
 
-          <ScrollView style={styles.tableBody}>
+          {/* This is the ScrollView you already had for the table body */}
+          <ScrollView style={styles.tableBody} nestedScrollEnabled={true}> 
             {LAB_TESTS.map((test, index) => (
               <View key={test.id} style={styles.tableRow}>
                 {/* Conditionally render date input only for the first row */}
@@ -407,6 +421,15 @@ const LabotaryPage = ({ navigation }) => {
                     </View>
                     <Text style={styles.checkboxLabel}>{test.name}</Text>
                   </TouchableOpacity>
+                  {/* New: Sample ID and Date Badge */}
+                  <View style={styles.badgeContainer}>
+                    <Text style={styles.badgeText}>
+                      Sample ID: {test.sampleId}
+                    </Text>
+                    <Text style={styles.badgeText}>
+                      Date: {testDates[test.id] || 'N/A'}
+                    </Text>
+                  </View>
                 </View>
               </View>
             ))}
@@ -679,7 +702,7 @@ const styles = StyleSheet.create({
     flex: 0.3, // Adjusted flex
     textAlign: 'center',
     paddingHorizontal: 10,
-    marginRight: 5, // Gap before the divider
+    marginRight: 7, // Gap before the divider
   },
   verticalDivider: {
     width: 1,
@@ -688,12 +711,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center', // Center it vertically
   },
   tableHeaderTestNameContainer: {
-    flex: 0.7, // Adjusted flex
+    flex: 0.4, // Adjusted flex
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between', // Push "Check All" left and "Test Name" right
     paddingLeft: 5, // Padding after the divider
-    paddingRight: 10, // Padding at the end of the header column
+    paddingRight: 18, // Padding at the end of the header column
   },
   tableHeaderText: {
     fontSize: 14,
@@ -706,14 +729,14 @@ const styles = StyleSheet.create({
   },
   tableRow: {
     flexDirection: 'row',
-    alignItems: 'center', // Align items vertically
+    // alignItems: 'center', // Remove this, as the badge will push content
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#f9fafb', // Lighter separator
   },
   dateInput: {
     flex: 0.3, // Adjusted flex
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     paddingVertical: 6,
     fontSize: 13,
     borderRadius: 5,
@@ -722,19 +745,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#374151',
     backgroundColor: '#fff',
-    marginRight: 5, // Gap before the divider
+    marginRight: 7, // Gap before the divider
+    height: 35, // Consistent height
   },
   emptyDateCell: {
     flex: 0.3, // Match flex
     paddingVertical: 6, // Match padding of dateInput
-    height: 30, // Give it a fixed height if date input has one, to maintain alignment
-    marginRight: 5, // Gap before the divider
+    height: 35, // Match height of dateInput, to maintain alignment
+    marginRight: 22, // Match gap before the divider
   },
   testNameCell: {
     flex: 0.7, // Adjusted flex
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start', // Align content to the left
+    flexDirection: 'column', // Change to column to stack name and badges
+    alignItems: 'flex-start', // Align content to the left
+    justifyContent: 'center', // Center vertically within its space
     paddingLeft: 5, // Padding after the divider
     paddingRight: 10, // Padding at the end of the row
   },
@@ -743,6 +767,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', // Vertically center checkbox and text
     justifyContent: 'flex-start', // Align to start of its space
     marginRight: 10, // Space between checkbox and text
+    marginBottom: 5, // Space between checkbox line and badge line
   },
   checkbox: {
     width: 18,
@@ -753,6 +778,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
+    marginRight: 5,
   },
   checkboxChecked: {
     backgroundColor: '#4dd0e1',
@@ -763,6 +789,23 @@ const styles = StyleSheet.create({
     flex: 1, // Allow text to take remaining space
     flexWrap: 'wrap', // Allow text to wrap
     lineHeight: 18, // Ensure consistent line height for wrapped text
+  },
+
+  // New styles for Badges
+  badgeContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#e0f7fa', // Light blue background for the badge band
+    borderRadius: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    alignSelf: 'flex-start', // Make the badge only take necessary width
+    marginTop: 4, // Space from the test name
+    gap: 8, // Space between Sample ID and Date within the badge
+  },
+  badgeText: {
+    fontSize: 11,
+    color: '#006064', // Darker blue-green color
+    fontWeight: '500',
   },
 
   // Action Buttons
